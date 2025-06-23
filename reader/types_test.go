@@ -16,14 +16,14 @@ func TestSurveyData_WriteJSON(t *testing.T) {
 		},
 		Responses: []SurveyResponse{
 			{
-				"Q1": {value: "foo"},
-				"Q2": {value: []string{"a", "b"}},
-				"Q3": {value: 42},
+				"Q1": {Value: "foo"},
+				"Q2": {Value: []string{"a", "b"}},
+				"Q3": {Value: 42},
 			},
 			{
-				"Q1": {value: nil},
-				"Q2": {value: nil},
-				"Q3": {value: nil},
+				"Q1": {Value: nil},
+				"Q2": {Value: nil},
+				"Q3": {Value: nil},
 			},
 		},
 	}
@@ -57,10 +57,10 @@ func TestResponseValue_AsString(t *testing.T) {
 		expect string
 		ok     bool
 	}{
-		{"string", ResponseValue{value: "foo"}, "foo", true},
-		{"int", ResponseValue{value: 42}, "42", true},
-		{"slice", ResponseValue{value: []string{"a", "b"}}, "a;b", true},
-		{"nil", ResponseValue{value: nil}, "", false},
+		{"string", ResponseValue{Value: "foo"}, "foo", true},
+		{"int", ResponseValue{Value: 42}, "42", true},
+		{"slice", ResponseValue{Value: []string{"a", "b"}}, "a;b", true},
+		{"nil", ResponseValue{Value: nil}, "", false},
 	}
 	for _, c := range cases {
 		got, ok := c.val.AsString()
@@ -77,10 +77,10 @@ func TestResponseValue_AsStringSlice(t *testing.T) {
 		expect []string
 		ok     bool
 	}{
-		{"slice", ResponseValue{value: []string{"a", "b"}}, []string{"a", "b"}, true},
-		{"string", ResponseValue{value: "foo"}, []string{"foo"}, true},
-		{"int", ResponseValue{value: 42}, nil, false},
-		{"nil", ResponseValue{value: nil}, nil, false},
+		{"slice", ResponseValue{Value: []string{"a", "b"}}, []string{"a", "b"}, true},
+		{"string", ResponseValue{Value: "foo"}, []string{"foo"}, true},
+		{"int", ResponseValue{Value: 42}, nil, false},
+		{"nil", ResponseValue{Value: nil}, nil, false},
 	}
 	for _, c := range cases {
 		got, ok := c.val.AsStringSlice()
@@ -103,10 +103,10 @@ func equalStringSlices(a, b []string) bool {
 }
 
 func TestResponseValue_IsPresent(t *testing.T) {
-	if !((ResponseValue{value: "foo"}).IsPresent()) {
+	if !((ResponseValue{Value: "foo"}).IsPresent()) {
 		t.Error("expected IsPresent true for non-nil value")
 	}
-	if (ResponseValue{value: nil}).IsPresent() {
+	if (ResponseValue{Value: nil}).IsPresent() {
 		t.Error("expected IsPresent false for nil value")
 	}
 }
@@ -120,14 +120,14 @@ func TestSurveyData_WriteAndLoadJSON_Gzip(t *testing.T) {
 		},
 		Responses: []SurveyResponse{
 			{
-				"Q1": ResponseValue{value: "foo"},
-				"Q2": ResponseValue{value: []string{"a", "b"}},
-				"Q3": ResponseValue{value: 42},
+				"Q1": ResponseValue{Value: "foo"},
+				"Q2": ResponseValue{Value: []string{"a", "b"}},
+				"Q3": ResponseValue{Value: 42},
 			},
 			{
-				"Q1": ResponseValue{value: nil},
-				"Q2": ResponseValue{value: nil},
-				"Q3": ResponseValue{value: nil},
+				"Q1": ResponseValue{Value: nil},
+				"Q2": ResponseValue{Value: nil},
+				"Q3": ResponseValue{Value: nil},
 			},
 		},
 	}
@@ -193,10 +193,10 @@ func TestSurveyData_CreateSubset(t *testing.T) {
 		&SchemaEntry{Key: "Q3", Text: "Age", QType: TE},
 	}
 	responses := []SurveyResponse{
-		{"Q1": ResponseValue{value: "red"}, "Q2": ResponseValue{value: []string{"reading", "music"}}, "Q3": ResponseValue{value: "30"}},
-		{"Q1": ResponseValue{value: "blue"}, "Q2": ResponseValue{value: []string{"sports"}}, "Q3": ResponseValue{value: "25"}},
-		{"Q1": ResponseValue{value: "green"}, "Q2": ResponseValue{value: []string{"reading"}}, "Q3": ResponseValue{value: "40"}},
-		{"Q1": ResponseValue{value: "red"}, "Q2": ResponseValue{value: []string{"music"}}, "Q3": ResponseValue{value: "22"}},
+		{"Q1": ResponseValue{Value: "red"}, "Q2": ResponseValue{Value: []string{"reading", "music"}}, "Q3": ResponseValue{Value: "30"}},
+		{"Q1": ResponseValue{Value: "blue"}, "Q2": ResponseValue{Value: []string{"sports"}}, "Q3": ResponseValue{Value: "25"}},
+		{"Q1": ResponseValue{Value: "green"}, "Q2": ResponseValue{Value: []string{"reading"}}, "Q3": ResponseValue{Value: "40"}},
+		{"Q1": ResponseValue{Value: "red"}, "Q2": ResponseValue{Value: []string{"music"}}, "Q3": ResponseValue{Value: "22"}},
 	}
 	sd := &SurveyData{Schema: schema, Responses: responses}
 	tests := []struct {

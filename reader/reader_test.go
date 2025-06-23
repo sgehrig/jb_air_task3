@@ -82,14 +82,14 @@ func TestSurveyData_LoadJSON(t *testing.T) {
 		},
 		Responses: []SurveyResponse{
 			{
-				"Q1": ResponseValue{value: "foo"},
-				"Q2": ResponseValue{value: []string{"a", "b"}},
-				"Q3": ResponseValue{value: 42},
+				"Q1": ResponseValue{Value: "foo"},
+				"Q2": ResponseValue{Value: []string{"a", "b"}},
+				"Q3": ResponseValue{Value: 42},
 			},
 			{
-				"Q1": ResponseValue{value: nil},
-				"Q2": ResponseValue{value: nil},
-				"Q3": ResponseValue{value: nil},
+				"Q1": ResponseValue{Value: nil},
+				"Q2": ResponseValue{Value: nil},
+				"Q3": ResponseValue{Value: nil},
 			},
 		},
 	}

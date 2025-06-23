@@ -42,20 +42,20 @@ func (s *SchemaEntry) addUsedOptions(vals []string) {
 
 func (s *SchemaEntry) ParseValue(value string) ResponseValue {
 	if value == "" || value == "NA" {
-		return ResponseValue{value: nil}
+		return ResponseValue{Value: nil}
 	}
 	switch s.QType {
 	case SC:
 		s.addUsedOptions([]string{value})
-		return ResponseValue{value: value}
+		return ResponseValue{Value: value}
 	case MC:
 		vals := strings.Split(value, ";")
 		s.addUsedOptions(vals)
-		return ResponseValue{value: vals}
+		return ResponseValue{Value: vals}
 	case TE:
-		return ResponseValue{value: value}
+		return ResponseValue{Value: value}
 	default:
-		return ResponseValue{value: nil}
+		return ResponseValue{Value: nil}
 	}
 }
 
@@ -105,7 +105,7 @@ func (s *Schema) add(key, text string, qtype QuestionType) {
 
 // ResponseValue holds the value for a question, respecting its type.
 type ResponseValue struct {
-	value any
+	Value any
 }
 
 // SurveyResponse maps question keys to their response value.
@@ -119,10 +119,10 @@ type SurveyData struct {
 
 // AsString returns the value as a string if possible.
 func (rv ResponseValue) AsString() (string, bool) {
-	if rv.value == nil {
+	if rv.Value == nil {
 		return "", false
 	}
-	switch v := rv.value.(type) {
+	switch v := rv.Value.(type) {
 	case string:
 		return v, true
 	case int:
@@ -136,12 +136,22 @@ func (rv ResponseValue) AsString() (string, bool) {
 
 // AsStringSlice returns the value as a []string if possible.
 func (rv ResponseValue) AsStringSlice() ([]string, bool) {
-	if rv.value == nil {
+	if rv.Value == nil {
 		return nil, false
 	}
-	switch v := rv.value.(type) {
+	switch v := rv.Value.(type) {
 	case []string:
 		return v, true
+	case []any:
+		var out []string
+		for _, elem := range v {
+			s, ok := elem.(string)
+			if !ok {
+				return nil, false
+			}
+			out = append(out, s)
+		}
+		return out, true
 	case string:
 		return []string{v}, true
 	default:
@@ -151,7 +161,7 @@ func (rv ResponseValue) AsStringSlice() ([]string, bool) {
 
 // IsPresent returns true if the value is not nil.
 func (rv ResponseValue) IsPresent() bool {
-	return rv.value != nil
+	return rv.Value != nil
 }
 
 // WriteJSON writes the SurveyData as JSON to the given io.Writer.
