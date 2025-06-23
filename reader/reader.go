@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/xuri/excelize/v2"
@@ -57,7 +56,7 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 				continue
 			}
 			val := row[colIdx]
-			if val == "NA" {
+			if val == "" || val == "NA" {
 				resp[key] = ResponseValue{value: nil}
 				continue
 			}
@@ -75,16 +74,10 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 					resp[key] = ResponseValue{value: strings.Split(val, ";")}
 				}
 			case TE:
-				if val == "" {
-					resp[key] = ResponseValue{value: nil}
-				} else {
-					parsed, err := strconv.Atoi(val)
-					if err == nil {
-						resp[key] = ResponseValue{value: parsed}
-					} else {
-						resp[key] = ResponseValue{value: nil}
-					}
-				}
+				resp[key] = ResponseValue{value: val}
+			default:
+				resp[key] = ResponseValue{value: nil}
+
 			}
 		}
 		responses = append(responses, resp)

@@ -48,8 +48,8 @@ func TestReadSurvey(t *testing.T) {
 			}
 		case TE:
 			if val.IsPresent() {
-				if _, ok := val.AsInt(); !ok {
-					t.Errorf("expected int for TE key %s", key)
+				if s, ok := val.AsString(); !ok || s == "" {
+					t.Errorf("expected string for TE key %s", key)
 				}
 			}
 		}
@@ -63,9 +63,6 @@ func TestReadSurvey(t *testing.T) {
 				// Should be nil for NA or empty
 				if _, ok := val.AsString(); ok {
 					t.Errorf("expected nil for NA/empty, got string for key %s", key)
-				}
-				if _, ok := val.AsInt(); ok {
-					t.Errorf("expected nil for NA/empty, got int for key %s", key)
 				}
 				if _, ok := val.AsStringSlice(); ok {
 					t.Errorf("expected nil for NA/empty, got []string for key %s", key)

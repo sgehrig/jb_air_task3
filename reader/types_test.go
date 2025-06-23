@@ -70,27 +70,6 @@ func TestResponseValue_AsString(t *testing.T) {
 	}
 }
 
-func TestResponseValue_AsInt(t *testing.T) {
-	cases := []struct {
-		name   string
-		val    ResponseValue
-		expect int
-		ok     bool
-	}{
-		{"int", ResponseValue{value: 42}, 42, true},
-		{"string-int", ResponseValue{value: "123"}, 123, true},
-		{"string-nonint", ResponseValue{value: "foo"}, 0, false},
-		{"slice", ResponseValue{value: []string{"1"}}, 0, false},
-		{"nil", ResponseValue{value: nil}, 0, false},
-	}
-	for _, c := range cases {
-		got, ok := c.val.AsInt()
-		if ok != c.ok || got != c.expect {
-			t.Errorf("%s: got (%d, %v), want (%d, %v)", c.name, got, ok, c.expect, c.ok)
-		}
-	}
-}
-
 func TestResponseValue_AsStringSlice(t *testing.T) {
 	cases := []struct {
 		name   string

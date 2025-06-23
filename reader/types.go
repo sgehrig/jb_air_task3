@@ -15,14 +15,15 @@ type QuestionType string
 const (
 	SC QuestionType = "SC" // Single Choice
 	MC QuestionType = "MC" // Multiple Choice
-	TE QuestionType = "TE" // Text Entry (integer)
+	TE QuestionType = "TE" // Text Entry
 )
 
 // SchemaEntry represents a single question's schema definition.
 type SchemaEntry struct {
-	Key   string
-	Text  string
-	QType QuestionType
+	Key     string
+	Text    string
+	QType   QuestionType
+	Options []string // Used options for SC and MC questions
 }
 
 // Schema maps question keys to their schema entry.
@@ -56,25 +57,6 @@ func (rv ResponseValue) AsString() (string, bool) {
 		return strings.Join(v, ";"), true
 	default:
 		return "", false
-	}
-}
-
-// AsInt returns the value as an int if possible.
-func (rv ResponseValue) AsInt() (int, bool) {
-	if rv.value == nil {
-		return 0, false
-	}
-	switch v := rv.value.(type) {
-	case int:
-		return v, true
-	case string:
-		ival, err := strconv.Atoi(v)
-		if err == nil {
-			return ival, true
-		}
-		return 0, false
-	default:
-		return 0, false
 	}
 }
 
