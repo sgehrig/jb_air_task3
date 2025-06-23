@@ -81,9 +81,20 @@ func ParseResponseQuery(input string) (*ResponseQuery, error) {
 			if eq := strings.Index(keysStr, "="); eq != -1 {
 				keysStr = keysStr[eq+1:]
 			}
-			keys := strings.Split(keysStr, ",")
-			for _, k := range keys {
+			for _, k := range splitKeys(keysStr) {
 				k = strings.TrimSpace(k)
+				if len(k) >= 2 && ((k[0] == '\'' && k[len(k)-1] == '\'') || (k[0] == '"' && k[len(k)-1] == '"')) {
+					quoteChar := k[0]
+					k = k[1 : len(k)-1]
+					k = strings.ReplaceAll(k, `\\`, `\`)
+					switch quoteChar {
+					case '\'':
+						k = strings.ReplaceAll(k, `''`, `'`)
+					case '"':
+						k = strings.ReplaceAll(k, `\"`, `"`)
+						k = strings.ReplaceAll(k, `""`, `"`)
+					}
+				}
 				if k != "" {
 					q.Keys = append(q.Keys, k)
 				}
@@ -116,18 +127,30 @@ func ParseResponseQuery(input string) (*ResponseQuery, error) {
 	return q, nil
 }
 
-func splitSections(input string) []string {
-	// Split on both semicolons and newlines
-	var out []string
-	for _, part := range strings.Split(input, "\n") {
-		for _, sub := range strings.Split(part, ";") {
-			trimmed := strings.TrimSpace(sub)
-			if trimmed != "" {
-				out = append(out, trimmed)
-			}
+// splitKeys splits a keys string on commas not inside single or double quotes.
+func splitKeys(s string) []string {
+	var res []string
+	var cur strings.Builder
+	inSingle, inDouble := false, false
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c == '\'' && !inDouble {
+			inSingle = !inSingle
+			cur.WriteByte(c)
+		} else if c == '"' && !inSingle {
+			inDouble = !inDouble
+			cur.WriteByte(c)
+		} else if c == ',' && !inSingle && !inDouble {
+			res = append(res, cur.String())
+			cur.Reset()
+		} else {
+			cur.WriteByte(c)
 		}
 	}
-	return out
+	if cur.Len() > 0 {
+		res = append(res, cur.String())
+	}
+	return res
 }
 
 var reEndpoint = regexp.MustCompile(`^(first|last|[0-9]+)([+-][0-9]+)?$`)
@@ -157,4 +180,18 @@ func parseRangeEndpoint(s string) (RangeEndpoint, error) {
 		}
 	}
 	return RangeEndpoint{Type: typ, Offset: offset, RawString: s}, nil
+}
+
+func splitSections(input string) []string {
+	// Split on both semicolons and newlines
+	var out []string
+	for _, part := range strings.Split(input, "\n") {
+		for _, sub := range strings.Split(part, ";") {
+			trimmed := strings.TrimSpace(sub)
+			if trimmed != "" {
+				out = append(out, trimmed)
+			}
+		}
+	}
+	return out
 }

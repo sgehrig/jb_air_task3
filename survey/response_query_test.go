@@ -66,6 +66,28 @@ func TestParseQuery_Valid(t *testing.T) {
 				},
 			},
 		},
+		{
+			"keys with spaces",
+			"keys:foo bar, baz qux",
+			ResponseQuery{
+				Keys: []string{"foo bar", "baz qux"},
+				Range: RangeSelector{
+					Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
+					End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
+				},
+			},
+		},
+		{
+			"single and double quoted keys",
+			`keys:'foo,bar', "baz qux", plain, 'with ''quote''', "with \"quote\""`,
+			ResponseQuery{
+				Keys: []string{"foo,bar", "baz qux", "plain", "with 'quote'", "with \"quote\""},
+				Range: RangeSelector{
+					Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
+					End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
