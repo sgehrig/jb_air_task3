@@ -1,98 +1,15 @@
 package reader
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/xuri/excelize/v2"
 )
-
-// QuestionType represents the type of a question in the schema.
-type QuestionType string
-
-const (
-	SC QuestionType = "SC" // Single Choice
-	MC QuestionType = "MC" // Multiple Choice
-	TE QuestionType = "TE" // Text Entry (integer)
-)
-
-// SchemaEntry represents a single question's schema definition.
-type SchemaEntry struct {
-	Key   string
-	Text  string
-	QType QuestionType
-}
-
-// Schema maps question keys to their schema entry.
-type Schema map[string]SchemaEntry
-
-// ResponseValue holds the value for a question, respecting its type.
-type ResponseValue struct {
-	value any
-}
-
-// AsString returns the value as a string if possible.
-func (rv ResponseValue) AsString() (string, error) {
-	if rv.value == nil {
-		return "", errors.New("no value present")
-	}
-	switch v := rv.value.(type) {
-	case string:
-		return v, nil
-	case int:
-		return strconv.Itoa(v), nil
-	case []string:
-		return strings.Join(v, ";"), nil
-	default:
-		return "", errors.New("unsupported type")
-	}
-}
-
-// AsInt returns the value as an int if possible.
-func (rv ResponseValue) AsInt() (int, error) {
-	if rv.value == nil {
-		return 0, errors.New("no value present")
-	}
-	switch v := rv.value.(type) {
-	case int:
-		return v, nil
-	case string:
-		return strconv.Atoi(v)
-	default:
-		return 0, errors.New("unsupported type")
-	}
-}
-
-// AsStringSlice returns the value as a []string if possible.
-func (rv ResponseValue) AsStringSlice() ([]string, error) {
-	if rv.value == nil {
-		return nil, errors.New("no value present")
-	}
-	switch v := rv.value.(type) {
-	case []string:
-		return v, nil
-	case string:
-		return []string{v}, nil
-	default:
-		return nil, errors.New("unsupported type")
-	}
-}
-
-// IsPresent returns true if the value is not nil.
-func (rv ResponseValue) IsPresent() bool {
-	return rv.value != nil
-}
-
-// SurveyResponse maps question keys to their response value.
-type SurveyResponse map[string]ResponseValue
-
-// SurveyData holds the schema and all responses.
-type SurveyData struct {
-	Schema    Schema
-	Responses []SurveyResponse
-}
 
 // ReadSurvey reads the Excel file and returns the parsed survey data.
 func ReadSurvey(filename string) (*SurveyData, error) {
@@ -175,4 +92,24 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 		Schema:    schema,
 		Responses: responses,
 	}, nil
+}
+
+// LoadJSON loads SurveyData from the given io.Reader.
+func LoadJSON(r io.Reader) (*SurveyData, error) {
+	var sd SurveyData
+	dec := json.NewDecoder(r)
+	if err := dec.Decode(&sd); err != nil {
+		return nil, err
+	}
+	return &sd, nil
+}
+
+// LoadJSONFromFile loads SurveyData from the specified file path.
+func LoadJSONFromFile(filename string) (*SurveyData, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return LoadJSON(f)
 }
