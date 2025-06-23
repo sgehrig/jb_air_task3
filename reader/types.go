@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"io"
 	"os"
@@ -104,12 +105,17 @@ func (sd *SurveyData) WriteJSON(w io.Writer) error {
 	return enc.Encode(sd)
 }
 
-// WriteJSONToFile writes the SurveyData as JSON to the specified file path.
+// WriteJSONToFile writes the SurveyData as JSON to the specified file path, gzip-compressed if the filename ends with .gz.
 func (sd *SurveyData) WriteJSONToFile(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+	if len(filename) > 3 && filename[len(filename)-3:] == ".gz" {
+		gw := gzip.NewWriter(f)
+		defer gw.Close()
+		return sd.WriteJSON(gw)
+	}
 	return sd.WriteJSON(f)
 }

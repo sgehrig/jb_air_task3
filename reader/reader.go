@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -105,13 +106,21 @@ func LoadJSON(r io.Reader) (*SurveyData, error) {
 	return &sd, nil
 }
 
-// LoadJSONFromFile loads SurveyData from the specified file path.
+// LoadJSONFromFile loads SurveyData from the specified file path, supporting gzip if the filename ends with .gz.
 func LoadJSONFromFile(filename string) (*SurveyData, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
+	if len(filename) > 3 && filename[len(filename)-3:] == ".gz" {
+		gr, err := gzip.NewReader(f)
+		if err != nil {
+			return nil, err
+		}
+		defer gr.Close()
+		return LoadJSON(gr)
+	}
 	return LoadJSON(f)
 }
 
@@ -122,7 +131,7 @@ func createCacheFilename(xlsxFile string) string {
 	if ext := filepath.Ext(base); ext != "" {
 		name = base[:len(base)-len(ext)]
 	}
-	return "_" + name + ".cache.json"
+	return "_" + name + ".cache.json.gz"
 }
 
 // ReadSurveyDataCached tries to load survey data from a JSON cache file derived from the XLSX filename.
