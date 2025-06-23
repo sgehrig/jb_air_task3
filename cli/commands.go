@@ -5,7 +5,7 @@ import (
     "sort"
     "strings"
 
-    "srg.de/jb/air_task3/reader"
+    "srg.de/jb/air_task3/survey"
 )
 
 type Command interface {

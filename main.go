@@ -8,7 +8,7 @@ import (
     "time"
 
     "srg.de/jb/air_task3/cli"
-    "srg.de/jb/air_task3/reader"
+    "srg.de/jb/air_task3/survey"
 )
 
 func main() {

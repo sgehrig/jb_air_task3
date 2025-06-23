@@ -3,7 +3,7 @@ package cli
 import (
     "fmt"
 
-    "srg.de/jb/air_task3/reader"
+    "srg.de/jb/air_task3/survey"
 )
 
 type QuitCommand struct{}

@@ -1,7 +1,7 @@
 package cli
 
 import (
-    "srg.de/jb/air_task3/reader"
+    "srg.de/jb/air_task3/survey"
 )
 
 type ResponsesCommand struct{}
