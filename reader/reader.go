@@ -115,25 +115,39 @@ func LoadJSONFromFile(filename string) (*SurveyData, error) {
 	return LoadJSON(f)
 }
 
+func createCacheFilename(xlsxFile string) string {
+	// Generate cache file name based on Excel file name, strip extension
+	base := filepath.Base(xlsxFile)
+	name := base
+	if ext := filepath.Ext(base); ext != "" {
+		name = base[:len(base)-len(ext)]
+	}
+	return "_" + name + ".cache.json"
+}
+
 // ReadSurveyDataCached tries to load survey data from a JSON cache file derived from the XLSX filename.
 // If not, it reads from the XLSX file, writes the JSON cache, and returns the data.
 func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
-	base := filepath.Base(xlsxFile)
-	jsonFile := "_" + strings.TrimSuffix(base, filepath.Ext(base)) + ".cache.json"
+	jsonFile := createCacheFilename(xlsxFile)
 
+	// Try to load from JSON first
 	if _, err := os.Stat(jsonFile); err == nil {
-		return LoadJSONFromFile(jsonFile)
+		data, err := LoadJSONFromFile(jsonFile)
+		if err == nil {
+			return data, nil
+		}
+		// If JSON exists but is invalid, fall back to XLSX
 	}
+	// Fallback: load from XLSX and write JSON
 	if _, err := os.Stat(xlsxFile); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not find %s or %s", jsonFile, xlsxFile)
 	}
 	data, err := ReadSurvey(xlsxFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read %s: %w", xlsxFile, err)
 	}
-	err = data.WriteJSONToFile(jsonFile)
-	if err != nil {
-		return nil, err
+	if err := data.WriteJSONToFile(jsonFile); err != nil {
+		return nil, fmt.Errorf("failed to write %s: %w", jsonFile, err)
 	}
 	return data, nil
 }

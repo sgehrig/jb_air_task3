@@ -2,6 +2,7 @@ package reader
 
 import (
 	"bytes"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -112,5 +113,48 @@ func TestSurveyData_LoadJSON(t *testing.T) {
 	}
 	if len(loaded.Responses) != len(sd.Responses) {
 		t.Errorf("Loaded responses length mismatch: got %d, want %d", len(loaded.Responses), len(sd.Responses))
+	}
+}
+
+func TestReadSurveyDataCached(t *testing.T) {
+	xlsxFile := "so_test.xlsx"
+	cacheFile := createCacheFilename(xlsxFile)
+
+	// Ensure cleanup before and after
+	_ = os.Remove(cacheFile)
+	defer os.Remove(cacheFile)
+
+	// 1. Cache does not exist, excel is valid
+	data1, err := ReadSurveyDataCached(xlsxFile)
+	if err != nil {
+		t.Fatalf("expected to read from xlsx, got error: %v", err)
+	}
+	if data1 == nil || len(data1.Schema) == 0 {
+		t.Fatalf("expected valid data from xlsx")
+	}
+	if _, err := os.Stat(cacheFile); err != nil {
+		t.Errorf("expected cache file to be created")
+	}
+
+	// 2. Cache exists and is valid
+	data2, err := ReadSurveyDataCached(xlsxFile)
+	if err != nil {
+		t.Fatalf("expected to read from cache, got error: %v", err)
+	}
+	if data2 == nil || len(data2.Schema) == 0 {
+		t.Fatalf("expected valid data from cache")
+	}
+
+	// 3. Cache exists but is invalid
+	// Overwrite cache file with invalid JSON
+	if err := os.WriteFile(cacheFile, []byte("{invalid json"), 0644); err != nil {
+		t.Fatalf("failed to write invalid cache: %v", err)
+	}
+	data3, err := ReadSurveyDataCached(xlsxFile)
+	if err != nil {
+		t.Fatalf("expected fallback to xlsx, got error: %v", err)
+	}
+	if data3 == nil || len(data3.Schema) == 0 {
+		t.Fatalf("expected valid data after fallback from invalid cache")
 	}
 }
