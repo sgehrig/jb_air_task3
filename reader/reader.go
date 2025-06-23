@@ -5,6 +5,7 @@ import (
     "fmt"
     "io"
     "os"
+    "path/filepath"
 
     "github.com/xuri/excelize/v2"
 )
@@ -85,7 +86,15 @@ func LoadSurveyDataFromFile(filename string) (*SurveyData, error) {
     return LoadSurveyData(f)
 }
 
-func ReadSurveyDataCached(jsonFile, xlsxFile string) (*SurveyData, error) {
+func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
+    // Generate cache file name based on Excel file name, strip extension
+    base := filepath.Base(xlsxFile)
+    name := base
+    if ext := filepath.Ext(base); ext != "" {
+        name = base[:len(base)-len(ext)]
+    }
+    jsonFile := "_" + name + ".cache.json"
+
     // Try to load from JSON first
     if _, err := os.Stat(jsonFile); err == nil {
         data, err := LoadSurveyDataFromFile(jsonFile)
