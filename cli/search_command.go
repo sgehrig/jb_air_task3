@@ -11,7 +11,7 @@ type SearchCommand struct {
 
 func (c *SearchCommand) Name() string { return "search" }
 
-func (c *SearchCommand) Aliases() []string { return []string{"find", "s", "q", "query"} }
+func (c *SearchCommand) Aliases() []string { return []string{"find", "query"} }
 
 func (c *SearchCommand) Run(cmd string, args []string, data *survey.SurveyData) (bool, error) {
 	if len(args) == 0 {
