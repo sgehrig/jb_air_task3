@@ -140,14 +140,60 @@ func parseKeys(sec string) ([]string, error) {
     if raw == "" {
         return nil, errors.New("no keys specified")
     }
-    keys := strings.Split(raw, ",")
+
+    // Custom parser for quoted and unquoted keys
     var out []string
-    for _, k := range keys {
-        k = strings.TrimSpace(k)
-        if k != "" {
-            out = append(out, k)
+    i := 0
+    for i < len(raw) {
+        // Skip whitespace and commas
+        for i < len(raw) && (raw[i] == ' ' || raw[i] == ',') {
+            i++
+        }
+        if i >= len(raw) {
+            break
+        }
+        if raw[i] == '\'' || raw[i] == '"' {
+            quote := raw[i]
+            i++
+            var sb strings.Builder
+            for i < len(raw) {
+                if raw[i] == quote {
+                    // Check for escaped quote ('' or "")
+                    if i+1 < len(raw) && raw[i+1] == quote {
+                        sb.WriteByte(quote)
+                        i += 2
+                        continue
+                    }
+                    i++
+                    break
+                }
+                // For double quotes, allow \" as escape
+                if quote == '"' && raw[i] == '\\' && i+1 < len(raw) && raw[i+1] == '"' {
+                    sb.WriteByte('"')
+                    i += 2
+                    continue
+                }
+                sb.WriteByte(raw[i])
+                i++
+            }
+            out = append(out, sb.String())
+        } else {
+            // Unquoted key: read until comma
+            start := i
+            for i < len(raw) && raw[i] != ',' {
+                i++
+            }
+            key := strings.TrimSpace(raw[start:i])
+            if key != "" {
+                out = append(out, key)
+            }
+        }
+        // Skip trailing comma if present
+        if i < len(raw) && raw[i] == ',' {
+            i++
         }
     }
+
     if len(out) == 0 {
         return nil, errors.New("no keys specified")
     }
