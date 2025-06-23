@@ -21,6 +21,7 @@ var (
         &ListCommand{},
         &SearchCommand{},
         &ResponsesCommand{},
+        &SubsetCommand{},
     }
 )
 

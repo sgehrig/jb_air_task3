@@ -8,7 +8,7 @@ type ResponsesCommand struct{}
 
 func (c *ResponsesCommand) Name() string { return "responses" }
 
-func (c *ResponsesCommand) Aliases() []string { return []string{"resp", "r"} }
+func (c *ResponsesCommand) Aliases() []string { return []string{"response", "resp"} }
 
 func (c *ResponsesCommand) Run(cmd string, args []string, data *survey.SurveyData) (bool, error) {
     responses := data.Responses
