@@ -2,11 +2,12 @@ package cli
 
 import (
     "fmt"
+    "slices"
 
     "srg.de/jb/air_task3/survey"
 )
 
-func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
+func outputSchemaEntry(entry *survey.SchemaEntry, i int, w int) {
     if i > 0 {
         if w < 1 {
             w = 1
@@ -16,7 +17,7 @@ func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
         fmt.Printf("[%s] (%s)\n", entry.Key, entry.QType)
     }
     fmt.Printf("    %s\n", entry.Text)
-    if ((entry.QType == reader.SC) || entry.QType == reader.MC) && (len(entry.UsedOptions) > 0) {
+    if ((entry.QType == survey.SC) || entry.QType == survey.MC) && (len(entry.UsedOptions) > 0) {
         fmt.Println("    Used options:")
         for _, opt := range entry.UsedOptions {
             fmt.Printf("        - %s\n", opt)
@@ -24,7 +25,7 @@ func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
     }
 }
 
-func outputSchemaEntries(entries []*reader.SchemaEntry) {
+func outputSchemaEntries(entries []*survey.SchemaEntry) {
     i := 1
     width := len(fmt.Sprintf("%d", len(entries)))
     for _, entry := range entries {
@@ -33,21 +34,21 @@ func outputSchemaEntries(entries []*reader.SchemaEntry) {
     }
 }
 
-func outputResponseValue(entry *reader.SchemaEntry, resp reader.Response) {
+func outputResponseValue(entry *survey.SchemaEntry, resp survey.Response) {
     val, ok := resp[entry.Key]
     if !ok || !val.Present() {
         fmt.Printf("    %s: n/a\n", entry.Key)
         return
     }
     switch entry.QType {
-    case reader.SC:
+    case survey.SC:
         s, ok := val.AsString()
         if ok {
             fmt.Printf("    %s: %s\n", entry.Key, s)
         } else {
             fmt.Printf("    %s: (invalid))\n", entry.Key)
         }
-    case reader.MC:
+    case survey.MC:
         ss, ok := val.AsStringSlice()
         if ok {
             fmt.Printf("    %s: ", entry.Key)
@@ -65,7 +66,7 @@ func outputResponseValue(entry *reader.SchemaEntry, resp reader.Response) {
         } else {
             fmt.Printf("    %s: (invalid)\n", entry.Key)
         }
-    case reader.TE:
+    case survey.TE:
         s, ok := val.AsString()
         if ok {
             fmt.Printf("    %s: %s\n", entry.Key, s)
@@ -76,16 +77,19 @@ func outputResponseValue(entry *reader.SchemaEntry, resp reader.Response) {
     }
 }
 
-func outputResponse(schema reader.Schema, resp reader.Response) {
+func outputResponse(schema survey.Schema, resp survey.Response, keys []string) {
 
     for _, entry := range schema {
+        if len(keys) > 0 && !slices.Contains(keys, entry.Key) {
+            continue
+        }
         outputResponseValue(entry, resp)
     }
 }
 
-func outputResponses(schema reader.Schema, responses []reader.Response) {
+func outputResponses(schema survey.Schema, responses []survey.Response, keys []string) {
     for i, resp := range responses {
         fmt.Printf("Response %d:\n", i+1)
-        outputResponse(schema, resp)
+        outputResponse(schema, resp, keys)
     }
 }

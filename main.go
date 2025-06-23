@@ -16,7 +16,7 @@ func main() {
 
     fmt.Printf("Loading survey data from %s...\n", xlsxFile)
     start := time.Now()
-    data, err := reader.ReadSurveyDataCached(xlsxFile)
+    data, err := survey.ReadSurveyDataCached(xlsxFile)
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error: %v\n", err)
         os.Exit(1)

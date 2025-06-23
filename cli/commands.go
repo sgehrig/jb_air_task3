@@ -11,7 +11,7 @@ import (
 type Command interface {
     Name() string
     Aliases() []string
-    Run(cmd string, args []string, data *reader.SurveyData) (bool, error)
+    Run(cmd string, args []string, data *survey.SurveyData) (bool, error)
 }
 
 var (
