@@ -36,7 +36,22 @@ func (cs CommandSet) Names() []string {
     for name := range cs {
         names = append(names, name)
     }
-    sort.Strings(names)
+    // Custom sort: "clear" first, "quit" last, rest alphabetical
+    sort.Slice(names, func(i, j int) bool {
+        if names[i] == "clear" {
+            return true
+        }
+        if names[j] == "clear" {
+            return false
+        }
+        if names[i] == "quit" {
+            return false
+        }
+        if names[j] == "quit" {
+            return true
+        }
+        return names[i] < names[j]
+    })
     return names
 }
 
