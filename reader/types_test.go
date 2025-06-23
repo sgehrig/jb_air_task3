@@ -74,3 +74,42 @@ func TestSurveyData_WriteJSON_and_LoadSurveyData(t *testing.T) {
         t.Errorf("Responses length mismatch: got %d, want %d", len(loaded.Responses), len(sd.Responses))
     }
 }
+
+func TestSchema_SearchForString(t *testing.T) {
+    schema := Schema{
+        &SchemaEntry{Key: "Q1", Text: "Favorite color", QType: SC, UsedOptions: []string{"red", "blue"}},
+        &SchemaEntry{Key: "Q2", Text: "Programming languages", QType: MC, UsedOptions: []string{"Go", "Python"}},
+        &SchemaEntry{Key: "Q3", Text: "Age", QType: TE},
+    }
+
+    tests := []struct {
+        query    string
+        wantKeys []string
+    }{
+        {"color", []string{"Q1"}},
+        {"go", []string{"Q2"}},
+        {"age", []string{"Q2", "Q3"}},
+        {"blue", []string{"Q1"}},
+        {"python", []string{"Q2"}},
+        {"q1", []string{"Q1"}},
+        {"q", []string{"Q1", "Q2", "Q3"}},
+        {"notfound", []string{}},
+    }
+
+    for _, tt := range tests {
+        got := schema.SearchForString(tt.query)
+        if len(got) != len(tt.wantKeys) {
+            t.Errorf("SearchForString(%q) got %d results, want %d", tt.query, len(got), len(tt.wantKeys))
+            continue
+        }
+        gotKeys := make(map[string]bool)
+        for _, entry := range got {
+            gotKeys[entry.Key] = true
+        }
+        for _, wantKey := range tt.wantKeys {
+            if !gotKeys[wantKey] {
+                t.Errorf("SearchForString(%q) missing key %q", tt.query, wantKey)
+            }
+        }
+    }
+}
