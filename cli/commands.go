@@ -22,6 +22,7 @@ var (
 		&SearchCommand{},
 		&ResponsesCommand{},
 		&SubsetCommand{},
+		&AnalyzeCommand{},
 	}
 )
 
