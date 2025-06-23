@@ -175,3 +175,29 @@ func (sd *SurveyData) WriteJSONToFile(filename string) error {
 	}
 	return sd.WriteJSON(f)
 }
+
+// CreateSubset returns all SurveyResponses where the given question key contains an option matching the search string (case-insensitive, partial match).
+func (sd *SurveyData) CreateSubset(key string, optionSearch string) []SurveyResponse {
+	var out []SurveyResponse
+	entry, found := sd.Schema.Get(key)
+	if !found {
+		return out
+	}
+	optionSearch = strings.ToLower(optionSearch)
+	for _, resp := range sd.Responses {
+		val, ok := resp[entry.Key]
+		if !ok || !val.IsPresent() {
+			continue
+		}
+		// Only SC and MC are relevant for options
+		if arr, ok := val.AsStringSlice(); ok {
+			for _, opt := range arr {
+				if strings.Contains(strings.ToLower(opt), optionSearch) {
+					out = append(out, resp)
+					break
+				}
+			}
+		}
+	}
+	return out
+}

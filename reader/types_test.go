@@ -185,3 +185,38 @@ func TestSchema_SearchForString(t *testing.T) {
 		}
 	}
 }
+
+func TestSurveyData_CreateSubset(t *testing.T) {
+	schema := Schema{
+		&SchemaEntry{Key: "Q1", Text: "Favorite color", QType: SC, Options: []string{"red", "blue", "green"}},
+		&SchemaEntry{Key: "Q2", Text: "Hobbies", QType: MC, Options: []string{"reading", "sports", "music"}},
+		&SchemaEntry{Key: "Q3", Text: "Age", QType: TE},
+	}
+	responses := []SurveyResponse{
+		{"Q1": ResponseValue{value: "red"}, "Q2": ResponseValue{value: []string{"reading", "music"}}, "Q3": ResponseValue{value: "30"}},
+		{"Q1": ResponseValue{value: "blue"}, "Q2": ResponseValue{value: []string{"sports"}}, "Q3": ResponseValue{value: "25"}},
+		{"Q1": ResponseValue{value: "green"}, "Q2": ResponseValue{value: []string{"reading"}}, "Q3": ResponseValue{value: "40"}},
+		{"Q1": ResponseValue{value: "red"}, "Q2": ResponseValue{value: []string{"music"}}, "Q3": ResponseValue{value: "22"}},
+	}
+	sd := &SurveyData{Schema: schema, Responses: responses}
+	tests := []struct {
+		key     string
+		query   string
+		expectN int
+	}{
+		{"Q1", "red", 2},
+		{"Q1", "blue", 1},
+		{"Q2", "music", 2},
+		{"Q2", "reading", 2},
+		{"Q2", "sports", 1},
+		{"Q3", "22", 1}, // TE, but will match as string
+		{"Q1", "notfound", 0},
+		{"QX", "red", 0}, // invalid key
+	}
+	for _, tc := range tests {
+		result := sd.CreateSubset(tc.key, tc.query)
+		if len(result) != tc.expectN {
+			t.Errorf("CreateSubset(%q, %q): got %d, want %d", tc.key, tc.query, len(result), tc.expectN)
+		}
+	}
+}
