@@ -8,10 +8,9 @@ import (
 )
 
 func main() {
-	jsonFile := "so_2024.json"
 	xlsxFile := "so_2024_raw.xlsx"
 
-	data, err := reader.ReadSurveyDataCached(jsonFile, xlsxFile)
+	data, err := reader.ReadSurveyDataCached(xlsxFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load survey data: %v\n", err)
 		os.Exit(1)

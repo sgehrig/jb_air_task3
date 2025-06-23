@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -114,9 +115,12 @@ func LoadJSONFromFile(filename string) (*SurveyData, error) {
 	return LoadJSON(f)
 }
 
-// ReadSurveyDataCached tries to load survey data from a JSON cache file if available.
+// ReadSurveyDataCached tries to load survey data from a JSON cache file derived from the XLSX filename.
 // If not, it reads from the XLSX file, writes the JSON cache, and returns the data.
-func ReadSurveyDataCached(jsonFile, xlsxFile string) (*SurveyData, error) {
+func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
+	base := filepath.Base(xlsxFile)
+	jsonFile := "_" + strings.TrimSuffix(base, filepath.Ext(base)) + ".cache.json"
+
 	if _, err := os.Stat(jsonFile); err == nil {
 		return LoadJSONFromFile(jsonFile)
 	}
