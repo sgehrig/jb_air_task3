@@ -7,13 +7,13 @@ import (
 )
 
 func TestResponseValue_AsMethods(t *testing.T) {
-    rvInt := ResponseValue{val: 42}
+    rvInt := ResponseValue{val: "42"}
     rvStr := ResponseValue{val: "foo"}
     rvSlice := ResponseValue{val: []string{"a", "b"}}
     rvNil := ResponseValue{val: nil}
 
-    if v, ok := rvInt.AsInt(); !ok || v != 42 {
-        t.Errorf("AsInt failed: got %v, %v", v, ok)
+    if v, ok := rvInt.AsString(); !ok || v != "42" {
+        t.Errorf("AsString failed: got %v, %v", v, ok)
     }
     if v, ok := rvStr.AsString(); !ok || v != "foo" {
         t.Errorf("AsString failed: got %v, %v", v, ok)

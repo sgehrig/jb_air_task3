@@ -12,15 +12,16 @@ import (
 type QuestionType string
 
 const (
-    SC QuestionType = "SC"
-    MC QuestionType = "MC"
-    TE QuestionType = "TE"
+    SC QuestionType = "SC" // Single Choice
+    MC QuestionType = "MC" // Multiple Choice
+    TE QuestionType = "TE" // Text Entry
 )
 
 type SchemaEntry struct {
-    Key   string
-    Text  string
-    QType QuestionType
+    Key         string
+    Text        string
+    QType       QuestionType
+    UsedOptions []string // Tracks used options for SC and MC questions
 }
 
 func (s SchemaEntry) ParseValue(val string) ResponseValue {
@@ -33,13 +34,9 @@ func (s SchemaEntry) ParseValue(val string) ResponseValue {
     case MC:
         return ResponseValue{val: strings.Split(val, ";")}
     case TE:
-        num, err := strconv.Atoi(val)
-        if err != nil {
-            return ResponseValue{val: nil}
-        }
-        return ResponseValue{val: num}
-    default:
         return ResponseValue{val: val}
+    default:
+        return ResponseValue{val: nil}
     }
 }
 
@@ -49,19 +46,34 @@ type ResponseValue struct {
     val any
 }
 
-func (rv ResponseValue) AsInt() (int, bool) {
-    v, ok := rv.val.(int)
-    return v, ok
-}
-
 func (rv ResponseValue) AsString() (string, bool) {
-    v, ok := rv.val.(string)
-    return v, ok
+    if rv.val == nil {
+        return "", false
+    }
+    switch v := rv.val.(type) {
+    case string:
+        return v, true
+    case int:
+        return strconv.Itoa(v), true
+    case []string:
+        return strings.Join(v, ";"), true
+    default:
+        return "", false
+    }
 }
 
 func (rv ResponseValue) AsStringSlice() ([]string, bool) {
-    v, ok := rv.val.([]string)
-    return v, ok
+    if rv.val == nil {
+        return nil, false
+    }
+    switch v := rv.val.(type) {
+    case []string:
+        return v, true
+    case string:
+        return []string{v}, true
+    default:
+        return nil, false
+    }
 }
 
 func (rv ResponseValue) Present() bool {
