@@ -11,6 +11,8 @@ type ListCommand struct {
 
 func (c *ListCommand) Name() string { return "list" }
 
+func (c *ListCommand) Aliases() []string { return []string{"ls"} }
+
 func (c *ListCommand) Run(cmd string, args []string, data *reader.SurveyData) (bool, error) {
 	// Output in the order as in the file (insertion order of Schema)
 	fmt.Println("Survey Questions:")
@@ -19,6 +21,12 @@ func (c *ListCommand) Run(cmd string, args []string, data *reader.SurveyData) (b
 	for _, entry := range data.Schema {
 		fmt.Printf("%0*d. [%s] (%s)\n", width, i, entry.Key, entry.QType)
 		fmt.Printf("    %s\n", entry.Text)
+		if ((entry.QType == reader.SC) || entry.QType == reader.MC) && (len(entry.Options) > 0) {
+			fmt.Println("    Used options:")
+			for _, opt := range entry.Options {
+				fmt.Printf("        - %s\n", opt)
+			}
+		}
 		i++
 	}
 	return true, nil

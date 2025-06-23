@@ -10,20 +10,20 @@ import (
 func TestSurveyData_WriteJSON(t *testing.T) {
 	sd := &SurveyData{
 		Schema: Schema{
-			"Q1": {Key: "Q1", Text: "Question 1", QType: SC},
-			"Q2": {Key: "Q2", Text: "Question 2", QType: MC},
-			"Q3": {Key: "Q3", Text: "Question 3", QType: TE},
+			{Key: "Q1", Text: "Question 1", QType: SC},
+			{Key: "Q2", Text: "Question 2", QType: MC},
+			{Key: "Q3", Text: "Question 3", QType: TE},
 		},
 		Responses: []SurveyResponse{
 			{
-				"Q1": ResponseValue{value: "foo"},
-				"Q2": ResponseValue{value: []string{"a", "b"}},
-				"Q3": ResponseValue{value: 42},
+				"Q1": {value: "foo"},
+				"Q2": {value: []string{"a", "b"}},
+				"Q3": {value: 42},
 			},
 			{
-				"Q1": ResponseValue{value: nil},
-				"Q2": ResponseValue{value: nil},
-				"Q3": ResponseValue{value: nil},
+				"Q1": {value: nil},
+				"Q2": {value: nil},
+				"Q3": {value: nil},
 			},
 		},
 	}
@@ -114,9 +114,9 @@ func TestResponseValue_IsPresent(t *testing.T) {
 func TestSurveyData_WriteAndLoadJSON_Gzip(t *testing.T) {
 	sd := &SurveyData{
 		Schema: Schema{
-			"Q1": {Key: "Q1", Text: "Question 1", QType: SC},
-			"Q2": {Key: "Q2", Text: "Question 2", QType: MC},
-			"Q3": {Key: "Q3", Text: "Question 3", QType: TE},
+			{Key: "Q1", Text: "Question 1", QType: SC},
+			{Key: "Q2", Text: "Question 2", QType: MC},
+			{Key: "Q3", Text: "Question 3", QType: TE},
 		},
 		Responses: []SurveyResponse{
 			{

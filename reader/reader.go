@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -20,7 +19,7 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 	}
 
 	// Read schema
-	schema := make(Schema)
+	schema := make(Schema, 0)
 	schemaRows, err := f.GetRows("schema")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read schema sheet: %w", err)
@@ -36,7 +35,7 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 		text := row[1]
 		typeStr := row[2]
 		qtype := QuestionType(typeStr)
-		schema[key] = SchemaEntry{Key: key, Text: text, QType: qtype}
+		schema.add(key, text, qtype)
 	}
 
 	// Read raw data
@@ -55,30 +54,11 @@ func ReadSurvey(filename string) (*SurveyData, error) {
 			if colIdx >= len(row) {
 				continue
 			}
-			val := row[colIdx]
-			if val == "" || val == "NA" {
-				resp[key] = ResponseValue{value: nil}
-				continue
-			}
-			entry, ok := schema[key]
+			entry, ok := schema.Get(key)
 			if !ok {
 				continue
 			}
-			switch entry.QType {
-			case SC:
-				resp[key] = ResponseValue{value: val}
-			case MC:
-				if val == "" {
-					resp[key] = ResponseValue{value: []string{}}
-				} else {
-					resp[key] = ResponseValue{value: strings.Split(val, ";")}
-				}
-			case TE:
-				resp[key] = ResponseValue{value: val}
-			default:
-				resp[key] = ResponseValue{value: nil}
-
-			}
+			resp[key] = entry.ParseValue(row[colIdx])
 		}
 		responses = append(responses, resp)
 	}
@@ -127,9 +107,9 @@ func createCacheFilename(xlsxFile string) string {
 	return "_" + name + ".cache.json.gz"
 }
 
-// ReadSurveyDataCached tries to load survey data from a JSON cache file derived from the XLSX filename.
+// ReadSurveyCached tries to load survey data from a JSON cache file derived from the XLSX filename.
 // If not, it reads from the XLSX file, writes the JSON cache, and returns the data.
-func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
+func ReadSurveyCached(xlsxFile string) (*SurveyData, error) {
 	jsonFile := createCacheFilename(xlsxFile)
 
 	// Try to load from JSON first

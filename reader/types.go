@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -26,8 +28,56 @@ type SchemaEntry struct {
 	Options []string // Used options for SC and MC questions
 }
 
+func (s *SchemaEntry) addUsedOptions(vals []string) {
+	for _, v := range vals {
+		if v == "" {
+			continue
+		}
+		if !slices.Contains(s.Options, v) {
+			s.Options = append(s.Options, v)
+		}
+	}
+	sort.Strings(s.Options)
+}
+
+func (s *SchemaEntry) ParseValue(value string) ResponseValue {
+	if value == "" || value == "NA" {
+		return ResponseValue{value: nil}
+	}
+	switch s.QType {
+	case SC:
+		s.addUsedOptions([]string{value})
+		return ResponseValue{value: value}
+	case MC:
+		vals := strings.Split(value, ";")
+		s.addUsedOptions(vals)
+		return ResponseValue{value: vals}
+	case TE:
+		return ResponseValue{value: value}
+	default:
+		return ResponseValue{value: nil}
+	}
+}
+
 // Schema maps question keys to their schema entry.
-type Schema map[string]SchemaEntry
+type Schema []*SchemaEntry
+
+func (s Schema) Get(key string) (*SchemaEntry, bool) {
+	for _, entry := range s {
+		if entry.Key == key {
+			return entry, true
+		}
+	}
+	return nil, false
+}
+
+func (s *Schema) add(key, text string, qtype QuestionType) {
+	_, exists := s.Get(key)
+	if exists {
+		return
+	}
+	*s = append(*s, &SchemaEntry{Key: key, Text: text, QType: qtype, Options: make([]string, 0)})
+}
 
 // ResponseValue holds the value for a question, respecting its type.
 type ResponseValue struct {

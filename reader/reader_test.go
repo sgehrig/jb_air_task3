@@ -23,33 +23,33 @@ func TestReadSurvey(t *testing.T) {
 	}
 
 	// Check schema types
-	for key, entry := range data.Schema {
+	for _, entry := range data.Schema {
 		if entry.QType != SC && entry.QType != MC && entry.QType != TE {
-			t.Errorf("unexpected question type for key %s: %s", key, entry.QType)
+			t.Errorf("unexpected question type for key %s: %s", entry.Key, entry.QType)
 		}
 	}
 
 	// Check values for first response (if available)
 	resp := data.Responses[0]
-	for key, entry := range data.Schema {
-		val := resp[key]
+	for _, entry := range data.Schema {
+		val := resp[entry.Key]
 		switch entry.QType {
 		case SC:
 			if val.IsPresent() {
 				if _, ok := val.AsString(); !ok {
-					t.Errorf("expected string for SC key %s", key)
+					t.Errorf("expected string for SC key %s", entry.Key)
 				}
 			}
 		case MC:
 			if val.IsPresent() {
 				if _, ok := val.AsStringSlice(); !ok {
-					t.Errorf("expected []string for MC key %s", key)
+					t.Errorf("expected []string for MC key %s", entry.Key)
 				}
 			}
 		case TE:
 			if val.IsPresent() {
 				if s, ok := val.AsString(); !ok || s == "" {
-					t.Errorf("expected string for TE key %s", key)
+					t.Errorf("expected string for TE key %s", entry.Key)
 				}
 			}
 		}
@@ -57,15 +57,15 @@ func TestReadSurvey(t *testing.T) {
 
 	// Check NA and empty handling
 	for _, resp := range data.Responses {
-		for key := range data.Schema {
-			val := resp[key]
+		for _, entry := range data.Schema {
+			val := resp[entry.Key]
 			if !val.IsPresent() {
 				// Should be nil for NA or empty
 				if _, ok := val.AsString(); ok {
-					t.Errorf("expected nil for NA/empty, got string for key %s", key)
+					t.Errorf("expected nil for NA/empty, got string for key %s", entry.Key)
 				}
 				if _, ok := val.AsStringSlice(); ok {
-					t.Errorf("expected nil for NA/empty, got []string for key %s", key)
+					t.Errorf("expected nil for NA/empty, got []string for key %s", entry.Key)
 				}
 			}
 		}
@@ -76,9 +76,9 @@ func TestReadSurvey(t *testing.T) {
 func TestSurveyData_LoadJSON(t *testing.T) {
 	sd := &SurveyData{
 		Schema: Schema{
-			"Q1": {Key: "Q1", Text: "Question 1", QType: SC},
-			"Q2": {Key: "Q2", Text: "Question 2", QType: MC},
-			"Q3": {Key: "Q3", Text: "Question 3", QType: TE},
+			{Key: "Q1", Text: "Question 1", QType: SC},
+			{Key: "Q2", Text: "Question 2", QType: MC},
+			{Key: "Q3", Text: "Question 3", QType: TE},
 		},
 		Responses: []SurveyResponse{
 			{
@@ -113,7 +113,7 @@ func TestSurveyData_LoadJSON(t *testing.T) {
 	}
 }
 
-func TestReadSurveyDataCached(t *testing.T) {
+func TestReadSurveyCached(t *testing.T) {
 	xlsxFile := "so_test.xlsx"
 	cacheFile := createCacheFilename(xlsxFile)
 
@@ -122,7 +122,7 @@ func TestReadSurveyDataCached(t *testing.T) {
 	defer os.Remove(cacheFile)
 
 	// 1. Cache does not exist, excel is valid
-	data1, err := ReadSurveyDataCached(xlsxFile)
+	data1, err := ReadSurveyCached(xlsxFile)
 	if err != nil {
 		t.Fatalf("expected to read from xlsx, got error: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestReadSurveyDataCached(t *testing.T) {
 	}
 
 	// 2. Cache exists and is valid
-	data2, err := ReadSurveyDataCached(xlsxFile)
+	data2, err := ReadSurveyCached(xlsxFile)
 	if err != nil {
 		t.Fatalf("expected to read from cache, got error: %v", err)
 	}
@@ -147,7 +147,7 @@ func TestReadSurveyDataCached(t *testing.T) {
 	if err := os.WriteFile(cacheFile, []byte("{invalid json"), 0644); err != nil {
 		t.Fatalf("failed to write invalid cache: %v", err)
 	}
-	data3, err := ReadSurveyDataCached(xlsxFile)
+	data3, err := ReadSurveyCached(xlsxFile)
 	if err != nil {
 		t.Fatalf("expected fallback to xlsx, got error: %v", err)
 	}
