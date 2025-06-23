@@ -1,78 +1,13 @@
 package reader
 
 import (
+    "encoding/json"
     "fmt"
-    "strconv"
-    "strings"
+    "io"
+    "os"
 
     "github.com/xuri/excelize/v2"
 )
-
-type QuestionType string
-
-const (
-    SC QuestionType = "SC"
-    MC QuestionType = "MC"
-    TE QuestionType = "TE"
-)
-
-type SchemaEntry struct {
-    Key   string
-    Text  string
-    QType QuestionType
-}
-
-func (s SchemaEntry) ParseValue(val string) ResponseValue {
-    if val == "" || val == "NA" {
-        return ResponseValue{val: nil}
-    }
-    switch s.QType {
-    case SC:
-        return ResponseValue{val: val}
-    case MC:
-        return ResponseValue{val: strings.Split(val, ";")}
-    case TE:
-        num, err := strconv.Atoi(val)
-        if err != nil {
-            return ResponseValue{val: nil}
-        }
-        return ResponseValue{val: num}
-    default:
-        return ResponseValue{val: val}
-    }
-}
-
-type Schema map[string]SchemaEntry
-
-type ResponseValue struct {
-    val any
-}
-
-func (rv ResponseValue) AsInt() (int, bool) {
-    v, ok := rv.val.(int)
-    return v, ok
-}
-
-func (rv ResponseValue) AsString() (string, bool) {
-    v, ok := rv.val.(string)
-    return v, ok
-}
-
-func (rv ResponseValue) AsStringSlice() ([]string, bool) {
-    v, ok := rv.val.([]string)
-    return v, ok
-}
-
-func (rv ResponseValue) Present() bool {
-    return rv.val != nil
-}
-
-type Response map[string]ResponseValue
-
-type SurveyData struct {
-    Schema    Schema
-    Responses []Response
-}
 
 func ReadSurveyData(filename string) (*SurveyData, error) {
     f, err := excelize.OpenFile(filename)
@@ -130,4 +65,22 @@ func ReadSurveyData(filename string) (*SurveyData, error) {
         Schema:    schema,
         Responses: responses,
     }, nil
+}
+
+func LoadSurveyData(r io.Reader) (*SurveyData, error) {
+    var sd SurveyData
+    dec := json.NewDecoder(r)
+    if err := dec.Decode(&sd); err != nil {
+        return nil, err
+    }
+    return &sd, nil
+}
+
+func LoadSurveyDataFromFile(filename string) (*SurveyData, error) {
+    f, err := os.Open(filename)
+    if err != nil {
+        return nil, err
+    }
+    defer f.Close()
+    return LoadSurveyData(f)
 }

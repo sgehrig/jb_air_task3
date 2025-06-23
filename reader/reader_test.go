@@ -1,11 +1,11 @@
 package reader
 
 import (
-    "testing"
     "path/filepath"
+    "testing"
 )
 
-func TestReadSurveyData(t *testing.T) {
+func TestSurveyData_WriteJSON(t *testing.T) {
     testFile := filepath.Join(".", "so_test.xlsx")
     data, err := ReadSurveyData(testFile)
     if err != nil {
