@@ -20,6 +20,7 @@ var (
         &QuitCommand{},
         &ListCommand{},
         &SearchCommand{},
+        &ResponsesCommand{},
     }
 )
 

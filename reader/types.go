@@ -40,20 +40,20 @@ func (s *SchemaEntry) addUsedOptions(vals []string) {
 
 func (s *SchemaEntry) ParseValue(val string) ResponseValue {
     if val == "" || val == "NA" {
-        return ResponseValue{val: nil}
+        return ResponseValue{Val: nil}
     }
     switch s.QType {
     case SC:
         s.addUsedOptions([]string{val})
-        return ResponseValue{val: val}
+        return ResponseValue{Val: val}
     case MC:
         vals := strings.Split(val, ";")
         s.addUsedOptions(vals)
-        return ResponseValue{val: vals}
+        return ResponseValue{Val: vals}
     case TE:
-        return ResponseValue{val: val}
+        return ResponseValue{Val: val}
     default:
-        return ResponseValue{val: nil}
+        return ResponseValue{Val: nil}
     }
 }
 
@@ -101,14 +101,14 @@ func (s *Schema) add(key, text string, qtype QuestionType) {
 }
 
 type ResponseValue struct {
-    val any
+    Val any
 }
 
 func (rv ResponseValue) AsString() (string, bool) {
-    if rv.val == nil {
+    if rv.Val == nil {
         return "", false
     }
-    switch v := rv.val.(type) {
+    switch v := rv.Val.(type) {
     case string:
         return v, true
     case int:
@@ -121,12 +121,22 @@ func (rv ResponseValue) AsString() (string, bool) {
 }
 
 func (rv ResponseValue) AsStringSlice() ([]string, bool) {
-    if rv.val == nil {
+    if rv.Val == nil {
         return nil, false
     }
-    switch v := rv.val.(type) {
+    switch v := rv.Val.(type) {
     case []string:
         return v, true
+    case []any:
+        var out []string
+        for _, elem := range v {
+            s, ok := elem.(string)
+            if !ok {
+                return nil, false
+            }
+            out = append(out, s)
+        }
+        return out, true
     case string:
         return []string{v}, true
     default:
@@ -135,7 +145,7 @@ func (rv ResponseValue) AsStringSlice() ([]string, bool) {
 }
 
 func (rv ResponseValue) Present() bool {
-    return rv.val != nil
+    return rv.Val != nil
 }
 
 type Response map[string]ResponseValue

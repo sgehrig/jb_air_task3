@@ -7,10 +7,10 @@ import (
 )
 
 func TestResponseValue_AsMethods(t *testing.T) {
-    rvInt := ResponseValue{val: "42"}
-    rvStr := ResponseValue{val: "foo"}
-    rvSlice := ResponseValue{val: []string{"a", "b"}}
-    rvNil := ResponseValue{val: nil}
+    rvInt := ResponseValue{Val: "42"}
+    rvStr := ResponseValue{Val: "foo"}
+    rvSlice := ResponseValue{Val: []string{"a", "b"}}
+    rvNil := ResponseValue{Val: nil}
 
     if v, ok := rvInt.AsString(); !ok || v != "42" {
         t.Errorf("AsString failed: got %v, %v", v, ok)
@@ -39,14 +39,14 @@ func TestSurveyData_WriteJSON_and_LoadSurveyData(t *testing.T) {
         },
         Responses: []Response{
             {
-                "Q1": {val: "foo"},
-                "Q2": {val: []string{"a", "b"}},
-                "Q3": {val: 123},
+                "Q1": {Val: "foo"},
+                "Q2": {Val: []string{"a", "b"}},
+                "Q3": {Val: 123},
             },
             {
-                "Q1": {val: nil},
-                "Q2": {val: []string{}},
-                "Q3": {val: nil},
+                "Q1": {Val: nil},
+                "Q2": {Val: []string{}},
+                "Q3": {Val: nil},
             },
         },
     }
@@ -121,10 +121,10 @@ func TestSurveyData_CreateSubset(t *testing.T) {
         &SchemaEntry{Key: "Q3", Text: "Comment", QType: TE},
     }
     responses := []Response{
-        {"Q1": ResponseValue{val: "red"}, "Q2": ResponseValue{val: []string{"Go", "Python"}}, "Q3": ResponseValue{val: "Nice!"}},
-        {"Q1": ResponseValue{val: "blue"}, "Q2": ResponseValue{val: []string{"Go"}}, "Q3": ResponseValue{val: "Cool!"}},
-        {"Q1": ResponseValue{val: "green"}, "Q2": ResponseValue{val: []string{"Java"}}, "Q3": ResponseValue{val: "Okay!"}},
-        {"Q1": ResponseValue{val: "red"}, "Q2": ResponseValue{val: []string{"Python"}}, "Q3": ResponseValue{val: "Great!"}},
+        {"Q1": ResponseValue{Val: "red"}, "Q2": ResponseValue{Val: []string{"Go", "Python"}}, "Q3": ResponseValue{Val: "Nice!"}},
+        {"Q1": ResponseValue{Val: "blue"}, "Q2": ResponseValue{Val: []string{"Go"}}, "Q3": ResponseValue{Val: "Cool!"}},
+        {"Q1": ResponseValue{Val: "green"}, "Q2": ResponseValue{Val: []string{"Java"}}, "Q3": ResponseValue{Val: "Okay!"}},
+        {"Q1": ResponseValue{Val: "red"}, "Q2": ResponseValue{Val: []string{"Python"}}, "Q3": ResponseValue{Val: "Great!"}},
     }
     sd := &SurveyData{
         Schema:    schema,

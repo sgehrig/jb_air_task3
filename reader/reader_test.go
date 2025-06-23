@@ -82,14 +82,14 @@ func TestSurveyData_LoadJSON(t *testing.T) {
         },
         Responses: []Response{
             {
-                "Q1": {val: "foo"},
-                "Q2": {val: []string{"a", "b"}},
-                "Q3": {val: 42},
+                "Q1": {Val: "foo"},
+                "Q2": {Val: []string{"a", "b"}},
+                "Q3": {Val: 42},
             },
             {
-                "Q1": {val: nil},
-                "Q2": {val: nil},
-                "Q3": {val: nil},
+                "Q1": {Val: nil},
+                "Q2": {Val: nil},
+                "Q3": {Val: nil},
             },
         },
     }
@@ -143,7 +143,7 @@ func TestSurveyData_WriteJSONToFile_Gzipped(t *testing.T) {
             {Key: "Q1", Text: "Question 1", QType: SC},
         },
         Responses: []Response{
-            {"Q1": {val: "foo"}},
+            {"Q1": {Val: "foo"}},
         },
     }
     gzFile := "test.cache.json.gz"
