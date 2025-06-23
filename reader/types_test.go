@@ -48,3 +48,85 @@ func TestSurveyData_WriteJSON(t *testing.T) {
 		t.Error("JSON output missing 'Responses' key")
 	}
 }
+
+func TestResponseValue_AsString(t *testing.T) {
+	cases := []struct {
+		name   string
+		val    ResponseValue
+		expect string
+		ok     bool
+	}{
+		{"string", ResponseValue{value: "foo"}, "foo", true},
+		{"int", ResponseValue{value: 42}, "42", true},
+		{"slice", ResponseValue{value: []string{"a", "b"}}, "a;b", true},
+		{"nil", ResponseValue{value: nil}, "", false},
+	}
+	for _, c := range cases {
+		got, ok := c.val.AsString()
+		if ok != c.ok || got != c.expect {
+			t.Errorf("%s: got (%q, %v), want (%q, %v)", c.name, got, ok, c.expect, c.ok)
+		}
+	}
+}
+
+func TestResponseValue_AsInt(t *testing.T) {
+	cases := []struct {
+		name   string
+		val    ResponseValue
+		expect int
+		ok     bool
+	}{
+		{"int", ResponseValue{value: 42}, 42, true},
+		{"string-int", ResponseValue{value: "123"}, 123, true},
+		{"string-nonint", ResponseValue{value: "foo"}, 0, false},
+		{"slice", ResponseValue{value: []string{"1"}}, 0, false},
+		{"nil", ResponseValue{value: nil}, 0, false},
+	}
+	for _, c := range cases {
+		got, ok := c.val.AsInt()
+		if ok != c.ok || got != c.expect {
+			t.Errorf("%s: got (%d, %v), want (%d, %v)", c.name, got, ok, c.expect, c.ok)
+		}
+	}
+}
+
+func TestResponseValue_AsStringSlice(t *testing.T) {
+	cases := []struct {
+		name   string
+		val    ResponseValue
+		expect []string
+		ok     bool
+	}{
+		{"slice", ResponseValue{value: []string{"a", "b"}}, []string{"a", "b"}, true},
+		{"string", ResponseValue{value: "foo"}, []string{"foo"}, true},
+		{"int", ResponseValue{value: 42}, nil, false},
+		{"nil", ResponseValue{value: nil}, nil, false},
+	}
+	for _, c := range cases {
+		got, ok := c.val.AsStringSlice()
+		if ok != c.ok || (ok && !equalStringSlices(got, c.expect)) {
+			t.Errorf("%s: got (%v, %v), want (%v, %v)", c.name, got, ok, c.expect, c.ok)
+		}
+	}
+}
+
+func equalStringSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestResponseValue_IsPresent(t *testing.T) {
+	if !((ResponseValue{value: "foo"}).IsPresent()) {
+		t.Error("expected IsPresent true for non-nil value")
+	}
+	if (ResponseValue{value: nil}).IsPresent() {
+		t.Error("expected IsPresent false for nil value")
+	}
+}
