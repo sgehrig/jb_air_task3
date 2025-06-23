@@ -84,3 +84,26 @@ func LoadSurveyDataFromFile(filename string) (*SurveyData, error) {
     defer f.Close()
     return LoadSurveyData(f)
 }
+
+func ReadSurveyDataCached(jsonFile, xlsxFile string) (*SurveyData, error) {
+    // Try to load from JSON first
+    if _, err := os.Stat(jsonFile); err == nil {
+        data, err := LoadSurveyDataFromFile(jsonFile)
+        if err == nil {
+            return data, nil
+        }
+        // If JSON exists but is invalid, fall back to XLSX
+    }
+    // Fallback: load from XLSX and write JSON
+    if _, err := os.Stat(xlsxFile); err != nil {
+        return nil, fmt.Errorf("could not find %s or %s", jsonFile, xlsxFile)
+    }
+    data, err := ReadSurveyData(xlsxFile)
+    if err != nil {
+        return nil, fmt.Errorf("failed to read %s: %w", xlsxFile, err)
+    }
+    if err := data.WriteJSONToFile(jsonFile); err != nil {
+        return nil, fmt.Errorf("failed to write %s: %w", jsonFile, err)
+    }
+    return data, nil
+}
