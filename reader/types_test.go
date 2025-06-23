@@ -156,3 +156,32 @@ func TestSurveyData_WriteAndLoadJSON_Gzip(t *testing.T) {
 		t.Errorf("Loaded responses length mismatch: got %d, want %d", len(loaded.Responses), len(sd.Responses))
 	}
 }
+
+func TestSchema_SearchForString(t *testing.T) {
+	s := Schema{
+		&SchemaEntry{Key: "Q1", Text: "Favorite color", QType: SC, Options: []string{"red", "blue", "green"}},
+		&SchemaEntry{Key: "Q2", Text: "Hobbies", QType: MC, Options: []string{"reading", "sports", "music"}},
+		&SchemaEntry{Key: "Q3", Text: "Age", QType: TE},
+	}
+	tests := []struct {
+		query  string
+		expect []string
+	}{
+		{"color", []string{"Q1"}},
+		{"sports", []string{"Q2"}},
+		{"q3", []string{"Q3"}},
+		{"red", []string{"Q1"}},
+		{"music", []string{"Q2"}},
+		{"notfound", nil},
+	}
+	for _, tc := range tests {
+		results := s.SearchForString(tc.query)
+		var keys []string
+		for _, entry := range results {
+			keys = append(keys, entry.Key)
+		}
+		if !equalStringSlices(keys, tc.expect) {
+			t.Errorf("query %q: got %v, want %v", tc.query, keys, tc.expect)
+		}
+	}
+}

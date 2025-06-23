@@ -59,6 +59,19 @@ func (s *SchemaEntry) ParseValue(value string) ResponseValue {
 	}
 }
 
+func (s *SchemaEntry) matches(str string) bool {
+	if strings.Contains(strings.ToLower(s.Key), str) ||
+		strings.Contains(strings.ToLower(s.Text), str) {
+		return true
+	}
+	for _, opt := range s.Options {
+		if strings.Contains(strings.ToLower(opt), str) {
+			return true
+		}
+	}
+	return false
+}
+
 // Schema maps question keys to their schema entry.
 type Schema []*SchemaEntry
 
@@ -69,6 +82,17 @@ func (s Schema) Get(key string) (*SchemaEntry, bool) {
 		}
 	}
 	return nil, false
+}
+
+func (s Schema) SearchForString(str string) []*SchemaEntry {
+	var out []*SchemaEntry
+	str = strings.ToLower(str)
+	for _, entry := range s {
+		if entry.matches(str) {
+			out = append(out, entry)
+		}
+	}
+	return out
 }
 
 func (s *Schema) add(key, text string, qtype QuestionType) {

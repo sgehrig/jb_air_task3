@@ -19,6 +19,7 @@ var (
 		&ClearCommand{},
 		&QuitCommand{},
 		&ListCommand{},
+		&SearchCommand{},
 	}
 )
 
