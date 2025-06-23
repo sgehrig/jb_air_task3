@@ -33,20 +33,20 @@ func TestSurveyData_WriteJSON_and_LoadSurveyData(t *testing.T) {
     // Minimal SurveyData for roundtrip
     sd := &SurveyData{
         Schema: Schema{
-            "Q1": SchemaEntry{Key: "Q1", Text: "Question 1", QType: SC},
-            "Q2": SchemaEntry{Key: "Q2", Text: "Question 2", QType: MC},
-            "Q3": SchemaEntry{Key: "Q3", Text: "Question 3", QType: TE},
+            {Key: "Q1", Text: "Question 1", QType: SC, UsedOptions: []string{"foo"}},
+            {Key: "Q2", Text: "Question 2", QType: MC, UsedOptions: []string{"a", "b"}},
+            {Key: "Q3", Text: "Question 3", QType: TE, UsedOptions: []string{}},
         },
         Responses: []Response{
             {
-                "Q1": ResponseValue{val: "foo"},
-                "Q2": ResponseValue{val: []string{"a", "b"}},
-                "Q3": ResponseValue{val: 123},
+                "Q1": {val: "foo"},
+                "Q2": {val: []string{"a", "b"}},
+                "Q3": {val: 123},
             },
             {
-                "Q1": ResponseValue{val: nil},
-                "Q2": ResponseValue{val: []string{}},
-                "Q3": ResponseValue{val: nil},
+                "Q1": {val: nil},
+                "Q2": {val: []string{}},
+                "Q3": {val: nil},
             },
         },
     }

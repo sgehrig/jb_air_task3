@@ -5,6 +5,8 @@ import (
     "encoding/json"
     "io"
     "os"
+    "slices"
+    "sort"
     "strconv"
     "strings"
 )
@@ -24,15 +26,30 @@ type SchemaEntry struct {
     UsedOptions []string // Tracks used options for SC and MC questions
 }
 
-func (s SchemaEntry) ParseValue(val string) ResponseValue {
+func (s *SchemaEntry) addUsedOptions(vals []string) {
+    for _, v := range vals {
+        if v == "" {
+            continue
+        }
+        if !slices.Contains(s.UsedOptions, v) {
+            s.UsedOptions = append(s.UsedOptions, v)
+        }
+    }
+    sort.Strings(s.UsedOptions)
+}
+
+func (s *SchemaEntry) ParseValue(val string) ResponseValue {
     if val == "" || val == "NA" {
         return ResponseValue{val: nil}
     }
     switch s.QType {
     case SC:
+        s.addUsedOptions([]string{val})
         return ResponseValue{val: val}
     case MC:
-        return ResponseValue{val: strings.Split(val, ";")}
+        vals := strings.Split(val, ";")
+        s.addUsedOptions(vals)
+        return ResponseValue{val: vals}
     case TE:
         return ResponseValue{val: val}
     default:
@@ -40,7 +57,24 @@ func (s SchemaEntry) ParseValue(val string) ResponseValue {
     }
 }
 
-type Schema map[string]SchemaEntry
+type Schema []*SchemaEntry
+
+func (s Schema) Get(key string) (*SchemaEntry, bool) {
+    for _, entry := range s {
+        if entry.Key == key {
+            return entry, true
+        }
+    }
+    return nil, false
+}
+
+func (s *Schema) add(key, text string, qtype QuestionType) {
+    _, exists := s.Get(key)
+    if exists {
+        return
+    }
+    *s = append(*s, &SchemaEntry{Key: key, Text: text, QType: qtype, UsedOptions: make([]string, 0)})
+}
 
 type ResponseValue struct {
     val any

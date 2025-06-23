@@ -19,7 +19,7 @@ func ReadSurveyData(filename string) (*SurveyData, error) {
     defer f.Close()
 
     // Read schema
-    schema := make(Schema)
+    schema := make(Schema, 0)
     rows, err := f.GetRows("schema")
     if err != nil {
         return nil, fmt.Errorf("failed to read schema sheet: %w", err)
@@ -34,7 +34,7 @@ func ReadSurveyData(filename string) (*SurveyData, error) {
         key := row[0]
         text := row[1]
         qtype := QuestionType(row[2])
-        schema[key] = SchemaEntry{Key: key, Text: text, QType: qtype}
+        schema.add(key, text, qtype)
     }
 
     // Read raw data
@@ -54,7 +54,7 @@ func ReadSurveyData(filename string) (*SurveyData, error) {
                 break
             }
             key := header[i]
-            entry, ok := schema[key]
+            entry, ok := schema.Get(key)
             if !ok {
                 continue
             }

@@ -24,33 +24,33 @@ func TestSurveyData_ReadSurveyData(t *testing.T) {
     }
 
     // Check schema types
-    for key, entry := range data.Schema {
+    for _, entry := range data.Schema {
         if entry.QType != SC && entry.QType != MC && entry.QType != TE {
-            t.Errorf("unexpected question type for key %s: %s", key, entry.QType)
+            t.Errorf("unexpected question type for key %s: %s", entry.Key, entry.QType)
         }
     }
 
     // Check values for first response (if available)
     resp := data.Responses[0]
-    for key, entry := range data.Schema {
-        val := resp[key]
+    for _, entry := range data.Schema {
+        val := resp[entry.Key]
         switch entry.QType {
         case SC:
             if val.Present() {
                 if _, ok := val.AsString(); !ok {
-                    t.Errorf("expected string for SC key %s", key)
+                    t.Errorf("expected string for SC key %s", entry.Key)
                 }
             }
         case MC:
             if val.Present() {
                 if _, ok := val.AsStringSlice(); !ok {
-                    t.Errorf("expected []string for MC key %s", key)
+                    t.Errorf("expected []string for MC key %s", entry.Key)
                 }
             }
         case TE:
             if val.Present() {
                 if _, ok := val.AsString(); !ok {
-                    t.Errorf("expected int for TE key %s", key)
+                    t.Errorf("expected int for TE key %s", entry.Key)
                 }
             }
         }
@@ -58,15 +58,15 @@ func TestSurveyData_ReadSurveyData(t *testing.T) {
 
     // Check NA and empty handling
     for _, resp := range data.Responses {
-        for key := range data.Schema {
-            val := resp[key]
+        for _, entry := range data.Schema {
+            val := resp[entry.Key]
             if !val.Present() {
                 // Should be nil for NA or empty
                 if _, ok := val.AsString(); ok {
-                    t.Errorf("expected nil for NA/empty, got string for key %s", key)
+                    t.Errorf("expected nil for NA/empty, got string for key %s", entry.Key)
                 }
                 if _, ok := val.AsStringSlice(); ok {
-                    t.Errorf("expected nil for NA/empty, got []string for key %s", key)
+                    t.Errorf("expected nil for NA/empty, got []string for key %s", entry.Key)
                 }
             }
         }
@@ -76,20 +76,20 @@ func TestSurveyData_ReadSurveyData(t *testing.T) {
 func TestSurveyData_LoadJSON(t *testing.T) {
     sd := &SurveyData{
         Schema: Schema{
-            "Q1": {Key: "Q1", Text: "Question 1", QType: SC},
-            "Q2": {Key: "Q2", Text: "Question 2", QType: MC},
-            "Q3": {Key: "Q3", Text: "Question 3", QType: TE},
+            {Key: "Q1", Text: "Question 1", QType: SC},
+            {Key: "Q2", Text: "Question 2", QType: MC},
+            {Key: "Q3", Text: "Question 3", QType: TE},
         },
         Responses: []Response{
             {
-                "Q1": ResponseValue{val: "foo"},
-                "Q2": ResponseValue{val: []string{"a", "b"}},
-                "Q3": ResponseValue{val: 42},
+                "Q1": {val: "foo"},
+                "Q2": {val: []string{"a", "b"}},
+                "Q3": {val: 42},
             },
             {
-                "Q1": ResponseValue{val: nil},
-                "Q2": ResponseValue{val: nil},
-                "Q3": ResponseValue{val: nil},
+                "Q1": {val: nil},
+                "Q2": {val: nil},
+                "Q3": {val: nil},
             },
         },
     }
@@ -140,10 +140,10 @@ func TestSurveyData_LoadJSON(t *testing.T) {
 func TestSurveyData_WriteJSONToFile_Gzipped(t *testing.T) {
     sd := &SurveyData{
         Schema: Schema{
-            "Q1": {Key: "Q1", Text: "Question 1", QType: SC},
+            {Key: "Q1", Text: "Question 1", QType: SC},
         },
         Responses: []Response{
-            {"Q1": ResponseValue{val: "foo"}},
+            {"Q1": {val: "foo"}},
         },
     }
     gzFile := "test.cache.json.gz"
