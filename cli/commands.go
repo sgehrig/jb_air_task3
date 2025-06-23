@@ -5,13 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	"srg.de/jb/air_task3/reader"
+	"srg.de/jb/air_task3/survey"
 )
 
 type Command interface {
 	Name() string
 	Aliases() []string
-	Run(cmd string, args []string, data *reader.SurveyData) (bool, error)
+	Run(cmd string, args []string, data *survey.SurveyData) (bool, error)
 }
 
 var (

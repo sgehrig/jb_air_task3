@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"srg.de/jb/air_task3/reader"
+	"srg.de/jb/air_task3/survey"
 )
 
 type SearchCommand struct {
@@ -13,7 +13,7 @@ func (c *SearchCommand) Name() string { return "search" }
 
 func (c *SearchCommand) Aliases() []string { return []string{"find", "s", "q", "query"} }
 
-func (c *SearchCommand) Run(cmd string, args []string, data *reader.SurveyData) (bool, error) {
+func (c *SearchCommand) Run(cmd string, args []string, data *survey.SurveyData) (bool, error) {
 	if len(args) == 0 {
 		return true, fmt.Errorf("missing search term")
 	}

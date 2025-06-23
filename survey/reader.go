@@ -1,4 +1,4 @@
-package reader
+package survey
 
 import (
 	"compress/gzip"

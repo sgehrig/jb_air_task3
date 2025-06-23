@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"srg.de/jb/air_task3/cli"
-	"srg.de/jb/air_task3/reader"
+	"srg.de/jb/air_task3/survey"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 
 	fmt.Printf("Loading survey data from %s...\n", xlsxFile)
 	start := time.Now()
-	data, err := reader.ReadSurveyCached(xlsxFile)
+	data, err := survey.ReadSurveyCached(xlsxFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load survey data: %v\n", err)
 		os.Exit(1)

@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 
-	"srg.de/jb/air_task3/reader"
+	"srg.de/jb/air_task3/survey"
 )
 
-func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
+func outputSchemaEntry(entry *survey.SchemaEntry, i int, w int) {
 	if i > 0 {
 		if w < 1 {
 			w = 1
@@ -16,7 +16,7 @@ func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
 		fmt.Printf("[%s] (%s)\n", entry.Key, entry.QType)
 	}
 	fmt.Printf("    %s\n", entry.Text)
-	if ((entry.QType == reader.SC) || entry.QType == reader.MC) && (len(entry.Options) > 0) {
+	if ((entry.QType == survey.SC) || entry.QType == survey.MC) && (len(entry.Options) > 0) {
 		fmt.Println("    Used options:")
 		for _, opt := range entry.Options {
 			fmt.Printf("        - %s\n", opt)
@@ -24,7 +24,7 @@ func outputSchemaEntry(entry *reader.SchemaEntry, i int, w int) {
 	}
 }
 
-func outputSchemaEntries(entries []*reader.SchemaEntry) {
+func outputSchemaEntries(entries []*survey.SchemaEntry) {
 	i := 1
 	width := len(fmt.Sprintf("%d", len(entries)))
 	for _, entry := range entries {
@@ -33,21 +33,21 @@ func outputSchemaEntries(entries []*reader.SchemaEntry) {
 	}
 }
 
-func outputResponseValue(entry *reader.SchemaEntry, resp reader.SurveyResponse) {
+func outputResponseValue(entry *survey.SchemaEntry, resp survey.SurveyResponse) {
 	val, ok := resp[entry.Key]
 	if !ok || !val.IsPresent() {
 		fmt.Printf("    %s: n/a\n", entry.Key)
 		return
 	}
 	switch entry.QType {
-	case reader.SC:
+	case survey.SC:
 		s, ok := val.AsString()
 		if ok {
 			fmt.Printf("    %s: %s\n", entry.Key, s)
 		} else {
 			fmt.Printf("    %s: (invalid))\n", entry.Key)
 		}
-	case reader.MC:
+	case survey.MC:
 		ss, ok := val.AsStringSlice()
 		if ok {
 			fmt.Printf("    %s: ", entry.Key)
@@ -65,7 +65,7 @@ func outputResponseValue(entry *reader.SchemaEntry, resp reader.SurveyResponse) 
 		} else {
 			fmt.Printf("    %s: (invalid)\n", entry.Key)
 		}
-	case reader.TE:
+	case survey.TE:
 		s, ok := val.AsString()
 		if ok {
 			fmt.Printf("    %s: %s\n", entry.Key, s)
@@ -75,14 +75,14 @@ func outputResponseValue(entry *reader.SchemaEntry, resp reader.SurveyResponse) 
 	}
 }
 
-func outputResponse(schema reader.Schema, resp reader.SurveyResponse) {
+func outputResponse(schema survey.Schema, resp survey.SurveyResponse) {
 
 	for _, entry := range schema {
 		outputResponseValue(entry, resp)
 	}
 }
 
-func outputResponses(schema reader.Schema, responses []reader.SurveyResponse) {
+func outputResponses(schema survey.Schema, responses []survey.SurveyResponse) {
 	for i, resp := range responses {
 		fmt.Printf("Response %d:\n", i+1)
 		outputResponse(schema, resp)
