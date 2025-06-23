@@ -86,14 +86,18 @@ func LoadSurveyDataFromFile(filename string) (*SurveyData, error) {
     return LoadSurveyData(f)
 }
 
-func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
+func createCacheFilename(xlsxFile string) string {
     // Generate cache file name based on Excel file name, strip extension
     base := filepath.Base(xlsxFile)
     name := base
     if ext := filepath.Ext(base); ext != "" {
         name = base[:len(base)-len(ext)]
     }
-    jsonFile := "_" + name + ".cache.json"
+    return "_" + name + ".cache.json"
+}
+
+func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {
+    jsonFile := createCacheFilename(xlsxFile)
 
     // Try to load from JSON first
     if _, err := os.Stat(jsonFile); err == nil {
