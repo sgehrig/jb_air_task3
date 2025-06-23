@@ -164,3 +164,36 @@ func (sd *SurveyData) WriteJSONToFile(filename string) error {
     }
     return sd.WriteJSON(f)
 }
+
+func (sd *SurveyData) CreateSubset(questionKey string, optionSearch string) []Response {
+    var result []Response
+    entry, found := sd.Schema.Get(questionKey)
+    if !found {
+        return result
+    }
+    optionSearchLower := strings.ToLower(optionSearch)
+    for _, resp := range sd.Responses {
+        val, ok := resp[questionKey]
+        if !ok || !val.Present() {
+            continue
+        }
+        switch entry.QType {
+        case SC:
+            s, ok := val.AsString()
+            if ok && strings.Contains(strings.ToLower(s), optionSearchLower) {
+                result = append(result, resp)
+            }
+        case MC:
+            ss, ok := val.AsStringSlice()
+            if ok {
+                for _, opt := range ss {
+                    if strings.Contains(strings.ToLower(opt), optionSearchLower) {
+                        result = append(result, resp)
+                        break
+                    }
+                }
+            }
+        }
+    }
+    return result
+}

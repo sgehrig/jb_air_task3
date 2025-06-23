@@ -113,3 +113,57 @@ func TestSchema_SearchForString(t *testing.T) {
         }
     }
 }
+
+func TestSurveyData_CreateSubset(t *testing.T) {
+    schema := Schema{
+        &SchemaEntry{Key: "Q1", Text: "Favorite color", QType: SC, UsedOptions: []string{"red", "blue"}},
+        &SchemaEntry{Key: "Q2", Text: "Languages", QType: MC, UsedOptions: []string{"Go", "Python"}},
+        &SchemaEntry{Key: "Q3", Text: "Comment", QType: TE},
+    }
+    responses := []Response{
+        {"Q1": ResponseValue{val: "red"}, "Q2": ResponseValue{val: []string{"Go", "Python"}}, "Q3": ResponseValue{val: "Nice!"}},
+        {"Q1": ResponseValue{val: "blue"}, "Q2": ResponseValue{val: []string{"Go"}}, "Q3": ResponseValue{val: "Cool!"}},
+        {"Q1": ResponseValue{val: "green"}, "Q2": ResponseValue{val: []string{"Java"}}, "Q3": ResponseValue{val: "Okay!"}},
+        {"Q1": ResponseValue{val: "red"}, "Q2": ResponseValue{val: []string{"Python"}}, "Q3": ResponseValue{val: "Great!"}},
+    }
+    sd := &SurveyData{
+        Schema:    schema,
+        Responses: responses,
+    }
+
+    // SC: search for "red" in Q1
+    subset := sd.CreateSubset("Q1", "red")
+    if len(subset) != 2 {
+        t.Errorf("CreateSubset SC: got %d, want 2", len(subset))
+    }
+
+    // MC: search for "python" in Q2 (case-insensitive, partial)
+    subset = sd.CreateSubset("Q2", "pyth")
+    if len(subset) != 2 {
+        t.Errorf("CreateSubset MC: got %d, want 2", len(subset))
+    }
+
+    // MC: search for "go" in Q2
+    subset = sd.CreateSubset("Q2", "go")
+    if len(subset) != 2 {
+        t.Errorf("CreateSubset MC: got %d, want 2", len(subset))
+    }
+
+    // MC: search for "java" in Q2
+    subset = sd.CreateSubset("Q2", "java")
+    if len(subset) != 1 {
+        t.Errorf("CreateSubset MC: got %d, want 1", len(subset))
+    }
+
+    // Invalid key
+    subset = sd.CreateSubset("QX", "red")
+    if len(subset) != 0 {
+        t.Errorf("CreateSubset invalid key: got %d, want 0", len(subset))
+    }
+
+    // TE: should not match anything
+    subset = sd.CreateSubset("Q3", "Nice")
+    if len(subset) != 0 {
+        t.Errorf("CreateSubset TE: got %d, want 0", len(subset))
+    }
+}
