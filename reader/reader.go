@@ -1,6 +1,7 @@
 package reader
 
 import (
+    "compress/gzip"
     "encoding/json"
     "fmt"
     "io"
@@ -83,6 +84,14 @@ func LoadSurveyDataFromFile(filename string) (*SurveyData, error) {
         return nil, err
     }
     defer f.Close()
+    if len(filename) > 3 && filename[len(filename)-3:] == ".gz" {
+        gr, err := gzip.NewReader(f)
+        if err != nil {
+            return nil, err
+        }
+        defer gr.Close()
+        return LoadSurveyData(gr)
+    }
     return LoadSurveyData(f)
 }
 
@@ -93,7 +102,7 @@ func createCacheFilename(xlsxFile string) string {
     if ext := filepath.Ext(base); ext != "" {
         name = base[:len(base)-len(ext)]
     }
-    return "_" + name + ".cache.json"
+    return "_" + name + ".cache.json.gz"
 }
 
 func ReadSurveyDataCached(xlsxFile string) (*SurveyData, error) {

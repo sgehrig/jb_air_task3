@@ -1,6 +1,7 @@
 package reader
 
 import (
+    "compress/gzip"
     "encoding/json"
     "io"
     "os"
@@ -86,5 +87,10 @@ func (sd *SurveyData) WriteJSONToFile(filename string) error {
         return err
     }
     defer f.Close()
+    if len(filename) > 3 && filename[len(filename)-3:] == ".gz" {
+        gw := gzip.NewWriter(f)
+        defer gw.Close()
+        return sd.WriteJSON(gw)
+    }
     return sd.WriteJSON(f)
 }

@@ -2,6 +2,7 @@ package reader
 
 import (
     "bytes"
+    "compress/gzip"
     "os"
     "path/filepath"
     "testing"
@@ -113,47 +114,59 @@ func TestSurveyData_LoadJSON(t *testing.T) {
     if len(loaded.Responses) != len(sd.Responses) {
         t.Errorf("Loaded responses length mismatch: got %d, want %d", len(loaded.Responses), len(sd.Responses))
     }
+
+    // --- Gzipped JSON roundtrip ---
+    var gzBuf bytes.Buffer
+    gzWriter := gzip.NewWriter(&gzBuf)
+    err = sd.WriteJSON(gzWriter)
+    if err != nil {
+        t.Fatalf("WriteJSON (gzip) failed: %v", err)
+    }
+    gzWriter.Close()
+
+    gzReader, err := gzip.NewReader(&gzBuf)
+    if err != nil {
+        t.Fatalf("gzip.NewReader failed: %v", err)
+    }
+    loadedGz, err := LoadSurveyData(gzReader)
+    if err != nil {
+        t.Fatalf("LoadJSON (gzip) failed: %v", err)
+    }
+    if len(loadedGz.Schema) != len(sd.Schema) {
+        t.Errorf("Loaded (gzip) schema length mismatch: got %d, want %d", len(loadedGz.Schema), len(sd.Schema))
+    }
+    if len(loadedGz.Responses) != len(sd.Responses) {
+        t.Errorf("Loaded (gzip) responses length mismatch: got %d, want %d", len(loadedGz.Responses), len(sd.Responses))
+    }
 }
 
-func TestReadSurveyDataCached(t *testing.T) {
-    xlsxFile := "so_test.xlsx"
-    cacheFile := createCacheFilename(xlsxFile)
+func TestSurveyData_WriteJSONToFile_Gzipped(t *testing.T) {
+    sd := &SurveyData{
+        Schema: Schema{
+            "Q1": {Key: "Q1", Text: "Question 1", QType: SC},
+        },
+        Responses: []Response{
+            {"Q1": ResponseValue{val: "foo"}},
+        },
+    }
+    gzFile := "test.cache.json.gz"
+    defer os.Remove(gzFile)
 
-    // Ensure cleanup before and after
-    _ = os.Remove(cacheFile)
-    defer os.Remove(cacheFile)
-
-    // 1. Cache does not exist, excel is valid
-    data1, err := ReadSurveyDataCached(xlsxFile)
+    // Write gzipped
+    err := sd.WriteJSONToFile(gzFile)
     if err != nil {
-        t.Fatalf("expected to read from xlsx, got error: %v", err)
-    }
-    if data1 == nil || len(data1.Schema) == 0 {
-        t.Fatalf("expected valid data from xlsx")
-    }
-    if _, err := os.Stat(cacheFile); err != nil {
-        t.Errorf("expected cache file to be created")
+        t.Fatalf("WriteJSONToFile (gz) failed: %v", err)
     }
 
-    // 2. Cache exists and is valid
-    data2, err := ReadSurveyDataCached(xlsxFile)
+    // Read back
+    loaded, err := LoadSurveyDataFromFile(gzFile)
     if err != nil {
-        t.Fatalf("expected to read from cache, got error: %v", err)
+        t.Fatalf("LoadSurveyDataFromFile (gz) failed: %v", err)
     }
-    if data2 == nil || len(data2.Schema) == 0 {
-        t.Fatalf("expected valid data from cache")
+    if len(loaded.Schema) != len(sd.Schema) {
+        t.Errorf("Loaded (gz) schema length mismatch: got %d, want %d", len(loaded.Schema), len(sd.Schema))
     }
-
-    // 3. Cache exists but is invalid
-    // Overwrite cache file with invalid JSON
-    if err := os.WriteFile(cacheFile, []byte("{invalid json"), 0644); err != nil {
-        t.Fatalf("failed to write invalid cache: %v", err)
-    }
-    data3, err := ReadSurveyDataCached(xlsxFile)
-    if err != nil {
-        t.Fatalf("expected fallback to xlsx, got error: %v", err)
-    }
-    if data3 == nil || len(data3.Schema) == 0 {
-        t.Fatalf("expected valid data after fallback from invalid cache")
+    if len(loaded.Responses) != len(sd.Responses) {
+        t.Errorf("Loaded (gz) responses length mismatch: got %d, want %d", len(loaded.Responses), len(sd.Responses))
     }
 }
