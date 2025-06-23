@@ -113,3 +113,23 @@ func LoadJSONFromFile(filename string) (*SurveyData, error) {
 	defer f.Close()
 	return LoadJSON(f)
 }
+
+// ReadSurveyDataCached tries to load survey data from a JSON cache file if available.
+// If not, it reads from the XLSX file, writes the JSON cache, and returns the data.
+func ReadSurveyDataCached(jsonFile, xlsxFile string) (*SurveyData, error) {
+	if _, err := os.Stat(jsonFile); err == nil {
+		return LoadJSONFromFile(jsonFile)
+	}
+	if _, err := os.Stat(xlsxFile); err != nil {
+		return nil, err
+	}
+	data, err := ReadSurvey(xlsxFile)
+	if err != nil {
+		return nil, err
+	}
+	err = data.WriteJSONToFile(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
