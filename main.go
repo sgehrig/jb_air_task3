@@ -1,11 +1,14 @@
 package main
 
 import (
-    "bufio"
+    "errors"
     "fmt"
+    "io"
     "os"
     "strings"
     "time"
+
+    "github.com/chzyer/readline"
 
     "srg.de/jb/air_task3/cli"
     "srg.de/jb/air_task3/survey"
@@ -28,14 +31,27 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error: %v\n", err)
     }
 
-    scanner := bufio.NewScanner(os.Stdin)
+    rl, err := readline.NewEx(&readline.Config{
+        Prompt: "(survey)> ",
+    })
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Failed to initialize readline: %v\n", err)
+        os.Exit(1)
+    }
+    defer rl.Close()
+
     fmt.Printf("Survey CLI. Type %s.\n", commandSet.Help())
     for {
-        fmt.Print("(survey)> ")
-        if !scanner.Scan() {
+        line, err := rl.Readline()
+        if errors.Is(err, readline.ErrInterrupt) {
+            if len(line) == 0 {
+                break
+            }
+            continue
+        } else if errors.Is(err, io.EOF) {
             break
         }
-        line := strings.TrimSpace(scanner.Text())
+        line = strings.TrimSpace(line)
         if line == "" {
             continue
         }
