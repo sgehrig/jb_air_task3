@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"slices"
 
 	"srg.de/jb/air_task3/survey"
 )
@@ -75,16 +76,18 @@ func outputResponseValue(entry *survey.SchemaEntry, resp survey.SurveyResponse) 
 	}
 }
 
-func outputResponse(schema survey.Schema, resp survey.SurveyResponse) {
-
+func outputResponse(schema survey.Schema, resp survey.SurveyResponse, keys []string) {
 	for _, entry := range schema {
+		if len(keys) > 0 && !slices.Contains(keys, entry.Key) {
+			continue
+		}
 		outputResponseValue(entry, resp)
 	}
 }
 
-func outputResponses(schema survey.Schema, responses []survey.SurveyResponse) {
+func outputResponses(schema survey.Schema, responses []survey.SurveyResponse, keys []string) {
 	for i, resp := range responses {
 		fmt.Printf("Response %d:\n", i+1)
-		outputResponse(schema, resp)
+		outputResponse(schema, resp, keys)
 	}
 }
