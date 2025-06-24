@@ -54,7 +54,14 @@ func main() {
 		if line == "" {
 			continue
 		}
-		args := strings.Fields(line)
+		args, err := cli.ParseCommandLine(line)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Parse error: %v\n", err)
+			continue
+		}
+		if len(args) == 0 {
+			continue
+		}
 		cmd := args[0]
 		cmdArgs := args[1:]
 
