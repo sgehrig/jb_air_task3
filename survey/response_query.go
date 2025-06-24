@@ -48,7 +48,7 @@ func (rq *ResponseQuery) Limit(responses []SurveyResponse) []SurveyResponse {
 
 func AllResponseQuery() *ResponseQuery {
 	return &ResponseQuery{
-		Keys: []string{},
+		Keys: nil,
 		Range: RangeSelector{
 			Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
 			End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
@@ -70,7 +70,7 @@ type RangeEndpoint struct {
 func ParseResponseQuery(input string) (*ResponseQuery, error) {
 	input = strings.TrimSpace(input)
 	sections := splitSections(input)
-	q := &ResponseQuery{Keys: []string{}, Range: RangeSelector{
+	q := &ResponseQuery{Keys: nil, Range: RangeSelector{
 		Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
 		End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
 	}}
