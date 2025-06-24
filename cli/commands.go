@@ -29,15 +29,33 @@ var (
 type CommandSet map[string]Command
 
 func (cs CommandSet) addCommand(cmd Command) error {
-    if _, ok := cs[cmd.Name()]; ok {
-        return fmt.Errorf("command already exists: %s", cmd.Name())
+    if cmd == nil {
+        return fmt.Errorf("cannot register nil command")
     }
-    for _, alias := range cmd.Aliases() {
-        if _, ok := cs[alias]; ok {
-            return fmt.Errorf("command alias already exists: %s", alias)
+    name := cmd.Name()
+    if _, exists := cs[name]; exists {
+        return fmt.Errorf("duplicate command name: %s", name)
+    }
+
+    // Build a set of all names and aliases already registered
+    used := make(map[string]string) // value: "name" or "alias"
+    for n, c := range cs {
+        used[n] = "name"
+        for _, a := range c.Aliases() {
+            used[a] = "alias"
         }
     }
-    cs[cmd.Name()] = cmd
+
+    // Check for duplicate aliases and name conflicts
+    for _, alias := range cmd.Aliases() {
+        if alias == name {
+            return fmt.Errorf("alias %q is the same as command name", alias)
+        }
+        if kind, exists := used[alias]; exists {
+            return fmt.Errorf("duplicate alias %q (already used as %s)", alias, kind)
+        }
+    }
+    cs[name] = cmd
     return nil
 }
 
