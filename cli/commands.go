@@ -32,8 +32,17 @@ func (cs CommandSet) addCommand(cmd Command) error {
 	if _, ok := cs[cmd.Name()]; ok {
 		return fmt.Errorf("command already exists: %s", cmd.Name())
 	}
+	// Build a set of all existing aliases
+	existingAliases := make(map[string]struct{})
+	for _, c := range cs {
+		for _, a := range c.Aliases() {
+			existingAliases[a] = struct{}{}
+		}
+		// Also treat command names as reserved aliases
+		existingAliases[c.Name()] = struct{}{}
+	}
 	for _, alias := range cmd.Aliases() {
-		if _, ok := cs[alias]; ok {
+		if _, ok := existingAliases[alias]; ok {
 			return fmt.Errorf("command alias already exists: %s", alias)
 		}
 	}
