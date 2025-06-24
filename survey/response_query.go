@@ -49,7 +49,7 @@ func (rq *ResponseQuery) Limit(responses []Response) []Response {
 
 func AllResponseQuery() *ResponseQuery {
     return &ResponseQuery{
-        Keys: []string{},
+        Keys: nil,
         Range: RangeSelector{
             Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
             End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
@@ -96,7 +96,7 @@ func ParseResponseQuery(input string) (*ResponseQuery, error) {
             return nil, fmt.Errorf("keys: %w", err)
         }
     } else {
-        keys = []string{}
+        keys = nil
     }
 
     var rng *RangeSelector

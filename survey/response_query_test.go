@@ -37,7 +37,7 @@ func TestParseResonseQuery_Valid(t *testing.T) {
 			"keys only",
 			"range:[first..last]",
 			ResponseQuery{
-				Keys: []string{},
+				Keys: nil,
 				Range: RangeSelector{
 					Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
 					End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},
@@ -48,7 +48,7 @@ func TestParseResonseQuery_Valid(t *testing.T) {
 			"empty query",
 			"",
 			ResponseQuery{
-				Keys: []string{},
+				Keys: nil,
 				Range: RangeSelector{
 					Start: RangeEndpoint{Type: "first", Offset: 0, RawString: "first"},
 					End:   RangeEndpoint{Type: "last", Offset: 0, RawString: "last"},

@@ -12,7 +12,7 @@ func (c *ResponsesCommand) Aliases() []string { return []string{"response", "res
 
 func (c *ResponsesCommand) Run(cmd string, args []string, data *survey.SurveyData) (bool, error) {
     responses := data.Responses
-    showKeys := []string{}
+    var showKeys []string
     if len(args) > 0 {
         queryString := args[0]
         query, err := survey.ParseResponseQuery(queryString)

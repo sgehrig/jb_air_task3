@@ -63,7 +63,7 @@ func (c *SubsetCommand) Run(cmd string, args []string, data *survey.SurveyData) 
         }
         found = query.Limit(found)
         if slices.Contains(query.Keys, "*") {
-            showKeys = []string{}
+            showKeys = nil
         } else {
             showKeys = append(showKeys, query.Keys...)
         }
